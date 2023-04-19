@@ -1,0 +1,26 @@
+CREATE TABLE User (
+	"birthday"	TEXT,
+	"id"	INTEGER,
+	"firstName"	TEXT,
+	"frequencyPerDay"	INTEGER,
+	"frequencyPerWeek"	INTEGER,
+	"gender"	TEXT,
+	"highDiastolicThreshold"	INTEGER,
+	"highPulseThreshold"	INTEGER,
+	"highSystolicThreshold"	INTEGER,
+	"lastName"	TEXT,
+	"profilePic"	blob,
+	"targetDia"	INTEGER,
+	"targetSys"	INTEGER,
+	"emailMarketing" INTEGER DEFAULT 0,
+	"targetWeight"	real,
+	"weight"	real,
+	"email"	TEXT,
+	"password"	TEXT
+);
+
+insert:
+INSERT INTO User VALUES ?;
+
+getAllUsers:
+SELECT * FROM User;
