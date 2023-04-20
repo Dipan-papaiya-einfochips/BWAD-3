@@ -14,8 +14,6 @@ actual class BluetoothAdapter {
     private var connectedDevice: BluetoothDevice? = null
     private var discoveredServices: List<BleService>? = null
 
-    private val serviceUUID = "56484AAE-A8EB-4A97-AC19-A8EA6373E05A"
-
     private val delegateImpl = object : NSObject(), CBCentralManagerDelegateProtocol, CBPeripheralDelegateProtocol {
         override fun centralManagerDidUpdateState(central: CBCentralManager) {
             when (central.state) {
@@ -91,7 +89,7 @@ actual class BluetoothAdapter {
     ///////////////////////////////////////////////////////////////////////////
 
     actual fun discoverDevices(callback: (BluetoothDevice) -> Unit) {
-        val bpmServiceUUID = CBUUID.UUIDWithString(serviceUUID)
+        val bpmServiceUUID = CBUUID.UUIDWithString(UUID_BLOOD_PRESSURE_SERVICE)
         if (isReady) {
 
             manager.scanForPeripheralsWithServices(listOf(bpmServiceUUID), null)
