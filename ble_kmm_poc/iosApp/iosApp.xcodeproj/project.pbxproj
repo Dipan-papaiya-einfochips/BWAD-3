@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		058557BB273AAA24004C7B11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557BA273AAA24004C7B11 /* Assets.xcassets */; };
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
+		9612A5C129F113F100AE0C42 /* KazBleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9612A5C029F113F100AE0C42 /* KazBleManager.swift */; };
+		9612A5C329F11B3300AE0C42 /* SecondScreenVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9612A5C229F11B3300AE0C42 /* SecondScreenVC.swift */; };
 		9657A64D29EFD62600432A77 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9657A64C29EFD62600432A77 /* AppDelegate.swift */; };
 		9657A65129EFD67400432A77 /* FirstScreenVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9657A65029EFD67400432A77 /* FirstScreenVC.swift */; };
 		9657A65329EFD6C400432A77 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9657A65229EFD6C400432A77 /* Main.storyboard */; };
@@ -24,6 +26,8 @@
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		793DF18F125F3F598CF8CAB1 /* Pods-iosApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosApp.debug.xcconfig"; path = "Target Support Files/Pods-iosApp/Pods-iosApp.debug.xcconfig"; sourceTree = "<group>"; };
 		8D1F904503FD66F57A67CA34 /* Pods_iosApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iosApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9612A5C029F113F100AE0C42 /* KazBleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KazBleManager.swift; sourceTree = "<group>"; };
+		9612A5C229F11B3300AE0C42 /* SecondScreenVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondScreenVC.swift; sourceTree = "<group>"; };
 		9657A64C29EFD62600432A77 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9657A65029EFD67400432A77 /* FirstScreenVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstScreenVC.swift; sourceTree = "<group>"; };
 		9657A65229EFD6C400432A77 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
@@ -87,6 +91,8 @@
 				9657A64C29EFD62600432A77 /* AppDelegate.swift */,
 				9657A65029EFD67400432A77 /* FirstScreenVC.swift */,
 				9657A65229EFD6C400432A77 /* Main.storyboard */,
+				9612A5C029F113F100AE0C42 /* KazBleManager.swift */,
+				9612A5C229F11B3300AE0C42 /* SecondScreenVC.swift */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -197,6 +203,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9612A5C329F11B3300AE0C42 /* SecondScreenVC.swift in Sources */,
+				9612A5C129F113F100AE0C42 /* KazBleManager.swift in Sources */,
 				9657A64D29EFD62600432A77 /* AppDelegate.swift in Sources */,
 				9657A65129EFD67400432A77 /* FirstScreenVC.swift in Sources */,
 			);

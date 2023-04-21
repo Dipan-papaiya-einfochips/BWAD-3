@@ -16,13 +16,81 @@
                     <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zyL-89-VfF">
+                                <rect key="frame" x="25" y="282" width="352" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="DNB-M3-T8C"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ova-Vs-iaP">
+                                <rect key="frame" x="144" y="559" width="114" height="35"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="35" id="ebh-Ea-0Xj"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Go to Next"/>
+                                <connections>
+                                    <action selector="btnActionGoNext:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="veh-Ws-s7b"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="zyL-89-VfF" secondAttribute="trailing" constant="16" id="2ca-0o-GMP"/>
+                            <constraint firstItem="zyL-89-VfF" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="223" id="7ak-BY-lEH"/>
+                            <constraint firstItem="zyL-89-VfF" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="25" id="HCc-F9-KdP"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="ova-Vs-iaP" secondAttribute="trailing" constant="135" id="MNJ-Bv-J8l"/>
+                            <constraint firstItem="ova-Vs-iaP" firstAttribute="top" secondItem="zyL-89-VfF" secondAttribute="bottom" constant="256" id="gRv-hr-nUq"/>
+                            <constraint firstItem="ova-Vs-iaP" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="144" id="xiV-wa-zRi"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="btnNav" destination="ova-Vs-iaP" id="3wJ-FG-G7y"/>
+                        <outlet property="lblText" destination="zyL-89-VfF" id="ROt-OY-kIT"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="131" y="-28"/>
+            <point key="canvasLocation" x="130.53435114503816" y="-28.169014084507044"/>
+        </scene>
+        <!--Second ScreenVC-->
+        <scene sceneID="Cqg-oX-Urz">
+            <objects>
+                <viewController storyboardIdentifier="SecondScreenVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="rVR-nt-EBT" customClass="SecondScreenVC" customModule="iosApp" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="WKc-8A-NQq">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rSl-cX-6Ir">
+                                <rect key="frame" x="20" y="428" width="353" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="Q1H-HN-Bhz"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="pvm-zc-hL2"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="pvm-zc-hL2" firstAttribute="trailing" secondItem="rSl-cX-6Ir" secondAttribute="trailing" constant="20" id="W6x-6E-1BM"/>
+                            <constraint firstItem="rSl-cX-6Ir" firstAttribute="centerY" secondItem="pvm-zc-hL2" secondAttribute="centerY" id="Zsg-0C-gcn"/>
+                            <constraint firstItem="rSl-cX-6Ir" firstAttribute="leading" secondItem="pvm-zc-hL2" secondAttribute="leading" constant="20" id="iTK-Bp-6Ty"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="lblText" destination="rSl-cX-6Ir" id="DL4-Du-A53"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="xrc-PC-0CU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="849.61832061068696" y="-28.169014084507044"/>
         </scene>
     </scenes>
     <resources>
