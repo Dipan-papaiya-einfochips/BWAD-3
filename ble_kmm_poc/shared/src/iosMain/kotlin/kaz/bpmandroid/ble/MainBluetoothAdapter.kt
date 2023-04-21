@@ -5,12 +5,12 @@ import platform.Foundation.NSError
 import platform.Foundation.NSNumber
 import platform.darwin.NSObject
 
-actual class BluetoothAdapter {
+actual class MainBluetoothAdapter {
 
     actual var listener: BluetoothAdapterListener? = null
 
     private var isReady = false
-    private var whenReady: ((BluetoothAdapter) -> Unit)? = null
+    private var whenReady: ((MainBluetoothAdapter) -> Unit)? = null
     private var connectedDevice: BluetoothDevice? = null
     private var discoveredServices: List<BleService>? = null
 
@@ -19,7 +19,7 @@ actual class BluetoothAdapter {
     private val delegateImpl = object : NSObject(), CBCentralManagerDelegateProtocol, CBPeripheralDelegateProtocol {
         override fun centralManagerDidUpdateState(central: CBCentralManager) {
             when (central.state) {
-                CBCentralManagerStatePoweredOn -> whenReady?.invoke(this@BluetoothAdapter)
+                CBCentralManagerStatePoweredOn -> whenReady?.invoke(this@MainBluetoothAdapter)
             }
         }
         override fun centralManager(

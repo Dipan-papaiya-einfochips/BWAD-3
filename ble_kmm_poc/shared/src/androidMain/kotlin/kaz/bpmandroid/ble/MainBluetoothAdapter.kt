@@ -7,14 +7,24 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
 import android.util.Log
+import androidx.annotation.RequiresApi
+import java.nio.ByteBuffer
 import java.util.*
+import java.util.zip.CRC32
+import java.util.zip.Checksum
+import kaz.bpmandroid.base.IBluetoothManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 @SuppressLint("MissingPermission")
-actual class BluetoothAdapter(
+actual class MainBluetoothAdapter(
     private val context: Context
 ) : BluetoothGattCallback() {
 
@@ -45,7 +55,7 @@ actual class BluetoothAdapter(
     // Actual declarations
     ///////////////////////////////////////////////////////////////////////////
 
-    actual var listener: BluetoothAdapterListener? = null
+    actual var listener: IBluetoothManager? = null
 
 
     actual fun discoverDevices(callback: (BluetoothDevice) -> Unit) {
@@ -68,8 +78,7 @@ actual class BluetoothAdapter(
 
     actual fun findBondedDevices(callback: (List<BluetoothDevice>) -> Unit) {
         bluetoothManager.getConnectedDevices(BluetoothProfile.GATT).filterNotNull()
-            .map { BluetoothDevice(it.address, it.name, it) }
-            .also(callback)
+            .map { BluetoothDevice(it.address, it.name, it) }.also(callback)
     }
 
     actual fun connect(device: BluetoothDevice) {
@@ -135,9 +144,22 @@ actual class BluetoothAdapter(
         }
     }
 
+    /* override fun onCharacteristicChanged(
+         gatt: BluetoothGatt,
+         characteristic: BluetoothGattCharacteristic
+     ) {
+         mainThreadHandler.post {
+             val device = getDeviceOrThrow()
+             val services = checkNotNull(discoveredServices)
+             val service = services.first { it.id == characteristic.service.uuid.toString() }
+             val char = BleCharacteristic(characteristic, service)
+             listener?.onStateChange(BleState.CharacteristicChanged(device, char))
+         }
+
+     }*/
+
     override fun onCharacteristicChanged(
-        gatt: BluetoothGatt,
-        characteristic: BluetoothGattCharacteristic
+        gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray
     ) {
         mainThreadHandler.post {
             val device = getDeviceOrThrow()
@@ -146,7 +168,36 @@ actual class BluetoothAdapter(
             val char = BleCharacteristic(characteristic, service)
             listener?.onStateChange(BleState.CharacteristicChanged(device, char))
         }
+    }
 
+    override fun onCharacteristicRead(
+        gatt: BluetoothGatt,
+        characteristic: BluetoothGattCharacteristic,
+        value: ByteArray,
+        status: Int
+    ) {
+        //super.onCharacteristicRead(gatt, characteristic, value, status)
+        mainThreadHandler.post {
+            val device = getDeviceOrThrow()
+            val services = checkNotNull(discoveredServices)
+            val service = services.first { it.id == characteristic.service.uuid.toString() }
+            val char = BleCharacteristic(characteristic, service)
+            listener?.onStateChange(BleState.CharacteristicWrite(device, char))
+        }
+    }
+
+
+    override fun onCharacteristicWrite(
+        gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int
+    ) {
+        //super.onCharacteristicWrite(gatt, characteristic, status)
+        mainThreadHandler.post {
+            val device = getDeviceOrThrow()
+            val services = checkNotNull(discoveredServices)
+            val service = services.first { it.id == characteristic.service.uuid.toString() }
+            val char = BleCharacteristic(characteristic, service)
+            listener?.onStateChange(BleState.CharacteristicWrite(device, char))
+        }
     }
 
     private fun getGatt(device: BluetoothDevice): BluetoothGatt {
@@ -160,8 +211,69 @@ actual class BluetoothAdapter(
             ?: error("Char not found ${char.id}")
     }
 
+    private fun getCharWithServiceAndCharacteristic(
+        gatt: BluetoothGatt, foServiceUUID: String, foCharUUID: String
+    ): BluetoothGattCharacteristic {
+        val service = gatt.getService(UUID.fromString(foServiceUUID))
+            ?: error("Service not found ${foServiceUUID}")
+        return service.getCharacteristic(UUID.fromString(foCharUUID))
+            ?: error("Char not found ${foCharUUID}")
+    }
+
     private fun getDeviceOrThrow(): BluetoothDevice =
         checkNotNull(connectedDevice) { "Device is not connected!" }
+
+    actual fun onCharacteristicsRead(
+        device: BluetoothDevice, char: BleCharacteristic, serviceUUID: String, charUUID: String
+    ) {
+    }
+
+
+    actual fun randomUUID(): String {
+        return UUID.randomUUID().toString()
+    }
+
+    actual fun getBPMHash(uuidString: String?): Long {
+
+
+        //System.out.println("Zero hash issue + uuidString " + uuidString);
+        val uuid = UUID.fromString(uuidString)
+        val bb = ByteBuffer.wrap(ByteArray(16))
+        bb.putLong(uuid.mostSignificantBits)
+        bb.putLong(uuid.leastSignificantBits)
+        val data = bb.array()
+        val checksum: Checksum = CRC32()
+        checksum.update(data, 0, data.size)
+        return checksum.value and 0x00FFFFFFL
+    }
+
+    actual fun onCharacteristicWrite(
+        device: BluetoothDevice,
+        service: BleService,
+        payload: ByteArray,
+        serviceUUID: String,
+        charUUID: String
+    ) {
+        CoroutineScope(Dispatchers.Default).async {
+            val gatt = getGatt(service.device)
+            val bleChar = getCharWithServiceAndCharacteristic(gatt, serviceUUID, charUUID)
+            var liResult = 1
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                liResult = device.gatt!!.writeCharacteristic(
+                    bleChar, payload, bleChar.writeType
+                )
+            } else {
+                var lbResult = device.gatt!!.writeCharacteristic(bleChar)
+                if (lbResult) {
+                    liResult = 0
+                }
+
+            }
+            println("Write Result: $liResult $charUUID")
+        }
+
+    }
+
 
 }
 
