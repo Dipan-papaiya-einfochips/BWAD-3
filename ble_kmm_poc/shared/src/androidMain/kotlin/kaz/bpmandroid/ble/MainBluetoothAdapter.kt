@@ -223,12 +223,6 @@ actual class MainBluetoothAdapter(
     private fun getDeviceOrThrow(): BluetoothDevice =
         checkNotNull(connectedDevice) { "Device is not connected!" }
 
-    actual fun onCharacteristicsRead(
-        device: BluetoothDevice, char: BleCharacteristic, serviceUUID: String, charUUID: String
-    ) {
-    }
-
-
     actual fun randomUUID(): String {
         return UUID.randomUUID().toString()
     }
@@ -254,24 +248,30 @@ actual class MainBluetoothAdapter(
         serviceUUID: String,
         charUUID: String
     ) {
-        CoroutineScope(Dispatchers.Default).async {
-            val gatt = getGatt(service.device)
-            val bleChar = getCharWithServiceAndCharacteristic(gatt, serviceUUID, charUUID)
-            var liResult = 1
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                liResult = device.gatt!!.writeCharacteristic(
-                    bleChar, payload, bleChar.writeType
-                )
-            } else {
-                var lbResult = device.gatt!!.writeCharacteristic(bleChar)
-                if (lbResult) {
-                    liResult = 0
-                }
-
+        val gatt = getGatt(service.device)
+        val bleChar = getCharWithServiceAndCharacteristic(gatt, serviceUUID, charUUID)
+        var liResult = 1
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            liResult = device.gatt!!.writeCharacteristic(
+                bleChar, payload, bleChar.writeType
+            )
+        } else {
+            var lbResult = device.gatt!!.writeCharacteristic(bleChar)
+            if (lbResult) {
+                liResult = 0
             }
-            println("Write Result: $liResult $charUUID")
-        }
 
+        }
+        println("Write Result: $liResult $charUUID")
+
+    }
+
+    actual fun onCharacteristicsRead(
+        device: BluetoothDevice, service: BleService, serviceUUID: String, charUUID: String
+    ) {
+        val gatt = getGatt(service.device)
+        val bleChar = getCharWithServiceAndCharacteristic(gatt, serviceUUID, charUUID)
+        device.gatt!!.readCharacteristic(bleChar)
     }
 
 

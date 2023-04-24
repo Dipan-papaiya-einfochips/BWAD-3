@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.*
 import kaz.bpmandroid.Repo.UserRepo
 import kaz.bpmandroid.base.BluetoothManager
-import kaz.bpmandroid.base.IBluetoothManager
+import kaz.bpmandroid.base.IBleConnectDisconnectListener
 import kaz.bpmandroid.ble.BluetoothDevice
 import kaz.bpmandroid.ble.MainBluetoothAdapter
 import kaz.bpmandroid.db.User
@@ -25,7 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity(), IBluetoothManager.BleConnectDisconectListener {
+class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener {
 
     private lateinit var mainBluetoothAdapter: MainBluetoothAdapter
     var loUsers: List<User> = ArrayList()
@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity(), IBluetoothManager.BleConnectDisconectL
         setContentView(R.layout.activity_main)
 
         mainBluetoothAdapter = MainBluetoothAdapter(this)
-        moBleManager = BluetoothManager(mainBluetoothAdapter)
+        moBleManager = BluetoothManager(mainBluetoothAdapter, this)
 
 
         checkBlePermission()
@@ -136,14 +136,11 @@ class MainActivity : AppCompatActivity(), IBluetoothManager.BleConnectDisconectL
 
     override fun onResume() {
         super.onResume()
-        moBleManager.registerListener(this)
+
     }
 
     override fun onPause() {
         super.onPause()
-        moBleManager.unregisterListener(
-            this
-        )
     }
 
     @SuppressLint("ServiceCast")

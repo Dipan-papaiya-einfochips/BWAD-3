@@ -26,7 +26,7 @@ expect class MainBluetoothAdapter {
 
     fun onCharacteristicsRead(
         device: BluetoothDevice,
-        char: BleCharacteristic,
+        service: BleService,
         serviceUUID: String,
         charUUID: String
     )
