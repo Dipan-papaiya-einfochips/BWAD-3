@@ -24,14 +24,14 @@ expect class MainBluetoothAdapter {
 
     fun setNotificationDisabled(char: BleCharacteristic)
 
-    fun onCharacteristicsRead(
+    fun characteristicsRead(
         device: BluetoothDevice,
         service: BleService,
         serviceUUID: String,
         charUUID: String
     )
 
-    fun onCharacteristicWrite(
+    fun characteristicWrite(
         device: BluetoothDevice,
         service: BleService,
         payload: ByteArray,

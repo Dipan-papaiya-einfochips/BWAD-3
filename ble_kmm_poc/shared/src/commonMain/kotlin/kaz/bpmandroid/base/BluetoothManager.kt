@@ -3,29 +3,39 @@ package kaz.bpmandroid.base
 import kaz.bpmandroid.ble.BleCharacteristic
 import kaz.bpmandroid.ble.BleService
 import kaz.bpmandroid.ble.BleState
-import kaz.bpmandroid.ble.BluetoothAdapterListener
 import kaz.bpmandroid.ble.MainBluetoothAdapter
 import kaz.bpmandroid.ble.BluetoothDevice
 import kaz.bpmandroid.model.BpMeasurement
 import kaz.bpmandroid.model.DeviceInfo
 import kaz.bpmandroid.util.Utils
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 class BluetoothManager(
-    private val mainBluetoothAdapter: MainBluetoothAdapter,
-    foListener: IBleConnectDisconnectListener
-) :
-    BaseObservable<IBluetoothManager>(), IBluetoothManager, IBleConnectDisconnectListener {
+    private val mainBluetoothAdapter: MainBluetoothAdapter
+) : BaseObservable<IBluetoothManager>(), IBluetoothManager {
     var moServiceList: ArrayList<BleService> = ArrayList()
     var peripheralsDiscovered: HashMap<String, DeviceInfo>? = HashMap()
     var miCurrentReadingIndex = 0
     var miTotalReadingIndex = 0
+    lateinit var moConnectDisconnectListener: IBleConnectDisconnectListener
+    lateinit var moReadingDataListener: IBleReadDataListener
+    var moUserNumber = 0
+    var moReadings: ArrayList<BpMeasurement>? = null
 
-    lateinit var moListener: IBleConnectDisconnectListener
 
+    private var foListener: IBleConnectDisconnectListener? = null
 
     init {
         mainBluetoothAdapter.listener = this
-        moListener = foListener
+    }
+
+    fun initConnectDisconnectListener(foListener: IBleConnectDisconnectListener) {
+        moConnectDisconnectListener = foListener
+    }
+
+    fun initReadingListener(foListener: IBleReadDataListener) {
+        moReadingDataListener = foListener
     }
 
     fun scanAndConnect() {
@@ -48,13 +58,17 @@ class BluetoothManager(
             is BleState.CharacteristicsDiscovered -> {
                 for (char in state.chars) {
                     println("Characteristics discovered ${state.chars}")
-                    mainBluetoothAdapter.setNotificationEnabled(char)
+                    runBlocking {
+                        delay(100)
+                        mainBluetoothAdapter.setNotificationEnabled(char)
+                    }
+
                 }
 
             }
             is BleState.Disconnected -> {
                 println("Disconnect device ${state.device.name}")
-                moListener.onDisconnect()
+                moConnectDisconnectListener.onDisconnect()
             }
             is BleState.ServicesDiscovered -> {
                 val macAddr: String = state.device.id
@@ -66,11 +80,15 @@ class BluetoothManager(
                     peripheralsDiscovered!!.put(macAddr, info)
                 }
                 for (service in state.services) {
-                    println("Service discovered ${service.id}")
-                    moServiceList.add(service)
-                    mainBluetoothAdapter.discoverCharacteristics(service)
+                    runBlocking {
+                        delay(100)
+                        println("Service discovered ${service.id}")
+                        moServiceList.add(service)
+                        mainBluetoothAdapter.discoverCharacteristics(service)
+                    }
                 }
-                moListener.onConnect(state.device)
+
+                moConnectDisconnectListener.onConnect(state.device)
             }
             is BleState.CharacteristicWrite -> {
                 println("CharacteristicWrite ${state.characteristic}")
@@ -81,6 +99,8 @@ class BluetoothManager(
                 println("CharacteristicRead ${state.characteristic}")
                 doNextCharacteristicOperations(state.characteristic, state.device)
             }
+
+            else -> {}
         }.let { /* exhaustive */ }
     }
 
@@ -89,17 +109,17 @@ class BluetoothManager(
     ) {
         if (characteristic.id.equals(Utils.BPM_USER_NAME_CHAR, true)) {
             pairDevice(device)
-        } else if (characteristic.id.equals(Utils.BPM_PAIRING_CHAR, true)) {
+        } else if (characteristic.id.equals(
+                Utils.BPM_PAIRING_CHAR, true
+            ) || characteristic.id.equals(Utils.PRESSURE_MEASUREMENT_CHAR, true)
+        ) {
             readDataFromDevice(device, Utils.UUID_KAZ_BPM_SERVICE, Utils.BPM_NUM_READINGS_CHAR)
-
         } else if (characteristic.id.equals(Utils.BPM_NUM_READINGS_CHAR, true)) {
             readAndGetTheDataFromDevice(characteristic, device)
         } else if (characteristic.id.equals(Utils.BPM_READING_REQUEST_CHAR, true)) {
-            if (miCurrentReadingIndex < miTotalReadingIndex) {
-                miCurrentReadingIndex++
-                prepareToGetTheHistoryData(0, miCurrentReadingIndex, device)
-            }
+
         } else if (characteristic.id.equals(Utils.BPM_REQUESTED_READING_CHAR, true)) {
+            moReadings = ArrayList()
             val deviceInfo = peripheralsDiscovered!![device.id]
             val meas = getBpMeasurement(
                 characteristic.value!!, deviceInfo!!
@@ -107,6 +127,16 @@ class BluetoothManager(
             println(
                 "Reading downloaded ++ systolic " + meas!!.systolic.toString() + ", Diastolic " + meas.diastolic.toString() + ", pulse " + meas.pulse.toString() + ", Date " + meas.day.toString() + ", " + meas.month.toString()
             )
+            moReadings!!.add(meas)
+
+            moReadingDataListener.onGetReadings(moReadings!!)
+            println("Index $miCurrentReadingIndex$miTotalReadingIndex")
+            if (miCurrentReadingIndex < miTotalReadingIndex) {
+                miCurrentReadingIndex++
+                prepareToGetTheHistoryData(moUserNumber, miCurrentReadingIndex, device)
+            }
+
+
         }
     }
 
@@ -116,16 +146,17 @@ class BluetoothManager(
         println("writeDataToDevice : $charUUID $payload")
         var loService: BleService = BleService(charUUID, foDevice)
 
-        mainBluetoothAdapter.onCharacteristicWrite(
+        mainBluetoothAdapter.characteristicWrite(
             foDevice, loService, payload, serviceUUID, charUUID
         )
     }
 
-    private fun readDataFromDevice(
+    fun readDataFromDevice(
         device: BluetoothDevice, serviceUUID: String, charUUID: String
     ) {
+        println("readDataFromDevice : $charUUID")
         var loService: BleService = BleService(charUUID, device)
-        mainBluetoothAdapter.onCharacteristicsRead(device, loService, serviceUUID, charUUID)
+        mainBluetoothAdapter.characteristicsRead(device, loService, serviceUUID, charUUID)
     }
 
     private fun readAndGetTheDataFromDevice(
@@ -138,7 +169,7 @@ class BluetoothManager(
             deviceInfo.maxUserStoredReadings = data[1].toInt() and 0xFF
             deviceInfo.user1NumReadings = data[2].toInt() and 0xFF
             deviceInfo.user2NumReadings = data[3].toInt() and 0xFF
-            downloadAllStoredReadingsForUser(deviceInfo, 0, device)
+            downloadAllStoredReadingsForUser(deviceInfo, 1, device)
         }
     }
 
@@ -156,10 +187,12 @@ class BluetoothManager(
             if (numReadings != 0) {
                 prepareToGetTheHistoryData(userNumber, miCurrentReadingIndex, device)
             }
+
         }
     }
 
     private fun prepareToGetTheHistoryData(userNumber: Int, index: Int, device: BluetoothDevice) {
+        println("prepareToGetTheHistoryData $userNumber$index")
         val data = ByteArray(2)
         data[0] = (0 and 0xFF).toByte()
         data[1] = (index and 0xFF).toByte()
@@ -173,7 +206,7 @@ class BluetoothManager(
             device,
             Utils.UUID_KAZ_BPM_SERVICE,
             Utils.BPM_PAIRING_CHAR,
-            Utils.getParingHash(0, deviceHash)
+            Utils.getParingHash(moUserNumber, deviceHash)
         )
 
     }
@@ -214,7 +247,6 @@ class BluetoothManager(
             bpMeas.month = month
             bpMeas.day = day.toInt()
             bpMeas.hours = hours.toInt()
-            bpMeas.hours = hours.toInt()
             bpMeas.minutes = minutes.toInt()
             bpMeas.seconds = seconds.toInt()
 
@@ -233,14 +265,4 @@ class BluetoothManager(
         }
         return bpMeas
     }
-
-    override fun onConnect(device: BluetoothDevice) {
-
-    }
-
-    override fun onDisconnect() {
-
-    }
-
-
 }

@@ -13,24 +13,30 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.*
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kaz.bpmandroid.Repo.UserRepo
 import kaz.bpmandroid.base.BluetoothManager
 import kaz.bpmandroid.base.IBleConnectDisconnectListener
+import kaz.bpmandroid.base.IBleReadDataListener
 import kaz.bpmandroid.ble.BluetoothDevice
 import kaz.bpmandroid.ble.MainBluetoothAdapter
 import kaz.bpmandroid.db.User
+import kaz.bpmandroid.model.BpMeasurement
 import kaz.bpmandroid.util.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener {
+class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleReadDataListener {
 
     private lateinit var mainBluetoothAdapter: MainBluetoothAdapter
     var loUsers: List<User> = ArrayList()
     lateinit var tv_name: TextView
     lateinit var moBleManager: BluetoothManager
+    lateinit var loRv: RecyclerView
+    var moList: ArrayList<BpMeasurement> = ArrayList()
 
 
     @SuppressLint("SetTextI18n")
@@ -39,12 +45,15 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener {
         setContentView(R.layout.activity_main)
 
         mainBluetoothAdapter = MainBluetoothAdapter(this)
-        moBleManager = BluetoothManager(mainBluetoothAdapter, this)
-
+        moBleManager = BluetoothManager(mainBluetoothAdapter)
+        moBleManager.initConnectDisconnectListener(this)
+        moBleManager.initReadingListener(this)
 
         checkBlePermission()
 
         var loBtnScan = findViewById<Button>(R.id.btn_scan)
+
+        loRv = findViewById<RecyclerView>(R.id.scan_results_recycler_view)
 
         loBtnScan.setOnClickListener { moBleManager.scanAndConnect() }
 
@@ -112,6 +121,7 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener {
         Toast.makeText(this, "Connected device ${device.name}", Toast.LENGTH_SHORT).show()
 
         displayUserNameOnDevice(device)
+        //moBleManager.readDataFromDevice(device, Utils.UUID_KAZ_BPM_SERVICE, Utils.BPM_NUM_READINGS_CHAR)
     }
 
     private fun displayUserNameOnDevice(device: BluetoothDevice) {
@@ -155,5 +165,17 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener {
         return true
     }
 
-
+    override fun onGetReadings(readingData: List<BpMeasurement>) {
+        println("Readings Data on Activity $readingData")
+        runOnUiThread {
+            moList.addAll(readingData)
+            moList.reverse()
+            var moAdapter = HistoryAdapter(moList)
+            var layoutManager = LinearLayoutManager(
+                this, RecyclerView.VERTICAL, false
+            )
+            loRv.layoutManager = layoutManager
+            loRv.adapter = moAdapter
+        }
+    }
 }

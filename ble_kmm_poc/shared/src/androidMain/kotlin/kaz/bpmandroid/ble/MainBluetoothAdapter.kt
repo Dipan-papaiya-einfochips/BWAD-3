@@ -12,7 +12,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
 import android.util.Log
-import androidx.annotation.RequiresApi
+import java.lang.reflect.Array.getChar
 import java.nio.ByteBuffer
 import java.util.*
 import java.util.zip.CRC32
@@ -21,7 +21,6 @@ import kaz.bpmandroid.base.IBluetoothManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 
 @SuppressLint("MissingPermission")
 actual class MainBluetoothAdapter(
@@ -123,12 +122,37 @@ actual class MainBluetoothAdapter(
         val gatt = getGatt(char.service.device)
         val bleChar = getChar(gatt, char)
         check(gatt.setCharacteristicNotification(bleChar, true)) { "Characteristic not written!" }
+        println("setNotificationEnabled " + " ${char.id} " + bleChar.descriptors)
+        updateDescriptors(bleChar, gatt)
     }
 
     actual fun setNotificationDisabled(char: BleCharacteristic) {
         val gatt = getGatt(char.service.device)
         val bleChar = getChar(gatt, char)
         check(gatt.setCharacteristicNotification(bleChar, false)) { "Characteristic not written!" }
+
+    }
+
+    fun updateDescriptors(bleChar: BluetoothGattCharacteristic, gatt: BluetoothGatt) {
+        if (bleChar.descriptors.size > 0) {
+            val descriptor = bleChar.getDescriptor(bleChar.descriptors[0].uuid)
+            descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+
+            var liResult = 1
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                liResult = gatt.writeDescriptor(
+                    descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                )
+            } else {
+                var lbResult = gatt.writeDescriptor(descriptor)
+                if (lbResult) {
+                    liResult = 0
+                }
+
+            }
+
+            println("Descriptor done $liResult ${bleChar.descriptors[0].uuid}")
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -161,6 +185,7 @@ actual class MainBluetoothAdapter(
     override fun onCharacteristicChanged(
         gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray
     ) {
+        println("onCharacteristicChanged ${characteristic.uuid}")
         mainThreadHandler.post {
             val device = getDeviceOrThrow()
             val services = checkNotNull(discoveredServices)
@@ -170,6 +195,21 @@ actual class MainBluetoothAdapter(
         }
     }
 
+
+/*    @Suppress("DEPRECATION")
+    @Deprecated("Used natively in Android 12 and lower")
+    override fun onCharacteristicRead(
+        gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int
+    ) {
+        mainThreadHandler.post {
+            val device = getDeviceOrThrow()
+            val services = checkNotNull(discoveredServices)
+            val service = services.first { it.id == characteristic.service.uuid.toString() }
+            val char = BleCharacteristic(characteristic, service)
+            listener?.onStateChange(BleState.CharacteristicRead(device, char))
+        }
+    }*/
+
     override fun onCharacteristicRead(
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic,
@@ -177,12 +217,13 @@ actual class MainBluetoothAdapter(
         status: Int
     ) {
         //super.onCharacteristicRead(gatt, characteristic, value, status)
+        println("onCharacteristicRead$value")
         mainThreadHandler.post {
             val device = getDeviceOrThrow()
             val services = checkNotNull(discoveredServices)
             val service = services.first { it.id == characteristic.service.uuid.toString() }
             val char = BleCharacteristic(characteristic, service)
-            listener?.onStateChange(BleState.CharacteristicWrite(device, char))
+            listener?.onStateChange(BleState.CharacteristicRead(device, char))
         }
     }
 
@@ -241,7 +282,7 @@ actual class MainBluetoothAdapter(
         return checksum.value and 0x00FFFFFFL
     }
 
-    actual fun onCharacteristicWrite(
+    actual fun characteristicWrite(
         device: BluetoothDevice,
         service: BleService,
         payload: ByteArray,
@@ -266,12 +307,14 @@ actual class MainBluetoothAdapter(
 
     }
 
-    actual fun onCharacteristicsRead(
+    actual fun characteristicsRead(
         device: BluetoothDevice, service: BleService, serviceUUID: String, charUUID: String
     ) {
+        println("characteristicsRead: $serviceUUID $charUUID")
         val gatt = getGatt(service.device)
         val bleChar = getCharWithServiceAndCharacteristic(gatt, serviceUUID, charUUID)
-        device.gatt!!.readCharacteristic(bleChar)
+        var liResult = device.gatt!!.readCharacteristic(bleChar)
+        println("Read Result: $liResult $charUUID")
     }
 
 

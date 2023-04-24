@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context=".MainActivity">
 
 
@@ -11,9 +11,7 @@
         android:id="@+id/txt_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
         android:layout_marginBottom="8dp"
-        android:gravity="center"
         android:text="ABC"
         android:textColor="@android:color/black"
         android:textStyle="bold" />
@@ -24,7 +22,23 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/txt_name"
         android:gravity="center"
+        android:padding="8dp"
         android:text="Start Scan" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/scan_results_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/btn_scan"
+        android:layout_marginTop="8dp"
+        tools:listitem="@layout/item_history_reading" />
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
 
 
 </RelativeLayout>

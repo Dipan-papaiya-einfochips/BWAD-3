@@ -52,7 +52,12 @@ internal class KtGattCallback(
         value: ByteArray,
         status: Int
     ) {
-        super.onCharacteristicRead(gatt, characteristic, value, status)
+        /*    super.onCharacteristicRead(gatt, characteristic, value, status)*/
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            proxy.onCharacteristicRead(gatt, characteristic, value, status)
+        } else {
+            proxy.onCharacteristicRead(gatt, characteristic, status)
+        }
     }
 
 

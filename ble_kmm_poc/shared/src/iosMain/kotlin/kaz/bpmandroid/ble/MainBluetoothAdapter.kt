@@ -1,5 +1,6 @@
 package kaz.bpmandroid.ble
 
+import kaz.bpmandroid.base.IBluetoothManager
 import platform.CoreBluetooth.*
 import platform.Foundation.NSError
 import platform.Foundation.NSNumber
@@ -142,5 +143,34 @@ actual class MainBluetoothAdapter {
         val cbService = char.service.device.peripheral.cbServices.first { it.UUID.UUIDString == char.service.id }
         val c = cbService.cbChars.first { it.UUID.UUIDString == char.id }
         char.service.device.peripheral.setNotifyValue(true, c)
+    }
+
+    actual var listener: IBluetoothManager?
+        get() = TODO("Not yet implemented")
+        set(value) {}
+
+    actual fun characteristicsRead(
+        device: BluetoothDevice,
+        service: BleService,
+        serviceUUID: String,
+        charUUID: String
+    ) {
+    }
+
+    actual fun characteristicWrite(
+        device: BluetoothDevice,
+        service: BleService,
+        payload: ByteArray,
+        serviceUUID: String,
+        charUUID: String
+    ) {
+    }
+
+    actual fun randomUUID(): String {
+
+    }
+
+    actual fun getBPMHash(uuidString: String?): Long {
+
     }
 }
