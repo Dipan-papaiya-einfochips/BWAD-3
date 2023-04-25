@@ -7,7 +7,9 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,6 +38,7 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
     lateinit var tv_name: TextView
     lateinit var moBleManager: BluetoothManager
     lateinit var loRv: RecyclerView
+    lateinit var moProgressBar: ProgressBar
     var moList: ArrayList<BpMeasurement> = ArrayList()
 
 
@@ -52,11 +55,14 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
         checkBlePermission()
 
         var loBtnScan = findViewById<Button>(R.id.btn_scan)
+        moProgressBar = findViewById(R.id.progress)
 
         loRv = findViewById<RecyclerView>(R.id.scan_results_recycler_view)
 
-        loBtnScan.setOnClickListener { moBleManager.scanAndConnect() }
-
+        loBtnScan.setOnClickListener {
+            moProgressBar.visibility = View.VISIBLE
+            moBleManager.scanAndConnect()
+        }
 
         tv_name = findViewById<TextView>(R.id.txt_name)
 
@@ -119,9 +125,9 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
         println("onConnect")
         tv_name.text = "Paired device ${device.name}"
         Toast.makeText(this, "Connected device ${device.name}", Toast.LENGTH_SHORT).show()
-
+        moProgressBar.visibility = View.GONE
         displayUserNameOnDevice(device)
-        //moBleManager.readDataFromDevice(device, Utils.UUID_KAZ_BPM_SERVICE, Utils.BPM_NUM_READINGS_CHAR)
+
     }
 
     private fun displayUserNameOnDevice(device: BluetoothDevice) {

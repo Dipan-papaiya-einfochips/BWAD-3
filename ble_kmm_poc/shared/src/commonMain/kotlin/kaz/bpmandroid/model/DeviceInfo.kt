@@ -30,8 +30,8 @@ class DeviceInfo {
     var deviceUptime: Long = 0
     var user1Pairable = false
     var user2Pairable = false
+    var user0NumReadings = 0
     var user1NumReadings = 0
-    var user2NumReadings = 0
     var macAddress: String? = null
     var manufacturerName: String? = null
     var serialNumber: String? = null

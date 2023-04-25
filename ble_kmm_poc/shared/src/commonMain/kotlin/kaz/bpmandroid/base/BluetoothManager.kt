@@ -3,8 +3,8 @@ package kaz.bpmandroid.base
 import kaz.bpmandroid.ble.BleCharacteristic
 import kaz.bpmandroid.ble.BleService
 import kaz.bpmandroid.ble.BleState
-import kaz.bpmandroid.ble.MainBluetoothAdapter
 import kaz.bpmandroid.ble.BluetoothDevice
+import kaz.bpmandroid.ble.MainBluetoothAdapter
 import kaz.bpmandroid.model.BpMeasurement
 import kaz.bpmandroid.model.DeviceInfo
 import kaz.bpmandroid.util.Utils
@@ -20,11 +20,8 @@ class BluetoothManager(
     var miTotalReadingIndex = 0
     lateinit var moConnectDisconnectListener: IBleConnectDisconnectListener
     lateinit var moReadingDataListener: IBleReadDataListener
-    var moUserNumber = 0
+    var moUserNumber: Int = 0
     var moReadings: ArrayList<BpMeasurement>? = null
-
-
-    private var foListener: IBleConnectDisconnectListener? = null
 
     init {
         mainBluetoothAdapter.listener = this
@@ -62,9 +59,7 @@ class BluetoothManager(
                         delay(100)
                         mainBluetoothAdapter.setNotificationEnabled(char)
                     }
-
                 }
-
             }
             is BleState.Disconnected -> {
                 println("Disconnect device ${state.device.name}")
@@ -81,7 +76,7 @@ class BluetoothManager(
                 }
                 for (service in state.services) {
                     runBlocking {
-                        delay(100)
+                        delay(50)
                         println("Service discovered ${service.id}")
                         moServiceList.add(service)
                         mainBluetoothAdapter.discoverCharacteristics(service)
@@ -108,7 +103,12 @@ class BluetoothManager(
         characteristic: BleCharacteristic, device: BluetoothDevice
     ) {
         if (characteristic.id.equals(Utils.BPM_USER_NAME_CHAR, true)) {
+            var data = characteristic.value
+            moUserNumber = data!![0].toInt()
+            println("NameData$data")
+            println("UserNumber$moUserNumber")
             pairDevice(device)
+
         } else if (characteristic.id.equals(
                 Utils.BPM_PAIRING_CHAR, true
             ) || characteristic.id.equals(Utils.PRESSURE_MEASUREMENT_CHAR, true)
@@ -116,8 +116,6 @@ class BluetoothManager(
             readDataFromDevice(device, Utils.UUID_KAZ_BPM_SERVICE, Utils.BPM_NUM_READINGS_CHAR)
         } else if (characteristic.id.equals(Utils.BPM_NUM_READINGS_CHAR, true)) {
             readAndGetTheDataFromDevice(characteristic, device)
-        } else if (characteristic.id.equals(Utils.BPM_READING_REQUEST_CHAR, true)) {
-
         } else if (characteristic.id.equals(Utils.BPM_REQUESTED_READING_CHAR, true)) {
             moReadings = ArrayList()
             val deviceInfo = peripheralsDiscovered!![device.id]
@@ -167,9 +165,9 @@ class BluetoothManager(
         if (deviceInfo != null) {
             deviceInfo.numUsers = data!![0].toInt()
             deviceInfo.maxUserStoredReadings = data[1].toInt() and 0xFF
-            deviceInfo.user1NumReadings = data[2].toInt() and 0xFF
-            deviceInfo.user2NumReadings = data[3].toInt() and 0xFF
-            downloadAllStoredReadingsForUser(deviceInfo, 1, device)
+            deviceInfo.user0NumReadings = data[2].toInt() and 0xFF
+            deviceInfo.user1NumReadings = data[3].toInt() and 0xFF
+            downloadAllStoredReadingsForUser(deviceInfo, moUserNumber, device)
         }
     }
 
@@ -179,10 +177,12 @@ class BluetoothManager(
         println("Download stored readings called for userNumber = $userNumber, Device info = $deviceInfo")
         if (deviceInfo != null) {
             var numReadings = 0
-            if (userNumber == 1) numReadings =
-                deviceInfo.user1NumReadings else if (userNumber == 2) numReadings =
-                deviceInfo.user2NumReadings
-            println("Readings added Number of stored readings for user == $numReadings")
+            if (userNumber == 0) {
+                numReadings = deviceInfo.user0NumReadings
+            } else if (userNumber == 1) {
+                numReadings = deviceInfo.user1NumReadings
+            }
+            println("Readings added Number of stored readings for user == ${deviceInfo.user1NumReadings}")
             miTotalReadingIndex = numReadings
             if (numReadings != 0) {
                 prepareToGetTheHistoryData(userNumber, miCurrentReadingIndex, device)
@@ -194,7 +194,7 @@ class BluetoothManager(
     private fun prepareToGetTheHistoryData(userNumber: Int, index: Int, device: BluetoothDevice) {
         println("prepareToGetTheHistoryData $userNumber$index")
         val data = ByteArray(2)
-        data[0] = (0 and 0xFF).toByte()
+        data[0] = (userNumber and 0xFF).toByte()
         data[1] = (index and 0xFF).toByte()
 
         writeDataToDevice(device, Utils.UUID_KAZ_BPM_SERVICE, Utils.BPM_READING_REQUEST_CHAR, data)
