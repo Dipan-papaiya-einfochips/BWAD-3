@@ -9,7 +9,7 @@
 import Foundation
 import shared
 import UIKit
-
+/*
 class KazBleManager: BleManagerDelegate{
     var device : BluetoothDevice?
     var bleState: KAZDeviceStatus?
@@ -81,3 +81,4 @@ extension BleManagerDelegate{
         debugPrint("Device get connected")
     }
 }
+*/

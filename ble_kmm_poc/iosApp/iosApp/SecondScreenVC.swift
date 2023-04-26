@@ -18,13 +18,13 @@ class SecondScreenVC: UIViewController {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
-        KazBleManager.sharedInstance.bleDelegate = self
+//        KazBleManager.sharedInstance.bleDelegate = self
         // Do any additional setup after loading the view.
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.lblText.text = ""
-        KazBleManager.sharedInstance.bleDelegate = self
+//        KazBleManager.sharedInstance.bleDelegate = self
     }
 
     /*
@@ -38,9 +38,9 @@ class SecondScreenVC: UIViewController {
     */
 
 }
-extension SecondScreenVC: BleManagerDelegate{
-    func bleDeviceGetConnected() {
-        self.lblText.text = "Device Connected on Second VC"
-        debugPrint("Device connectd SecondScreenVC")
-    }
-}
+//extension SecondScreenVC: BleManagerDelegate{
+//    func bleDeviceGetConnected() {
+//        self.lblText.text = "Device Connected on Second VC"
+//        debugPrint("Device connectd SecondScreenVC")
+//    }
+//}

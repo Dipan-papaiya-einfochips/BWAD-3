@@ -103,6 +103,7 @@ class BluetoothManager(
         characteristic: BleCharacteristic, device: BluetoothDevice
     ) {
         if (characteristic.id.equals(Utils.BPM_USER_NAME_CHAR, true)) {
+            println("doNextCharacteristicOperations Utils.BPM_USER_NAME_CHAR")
             var data = characteristic.value
             /*         moUserNumber = data!![0].toInt()
                      println("Before UserNumber$moUserNumber")
