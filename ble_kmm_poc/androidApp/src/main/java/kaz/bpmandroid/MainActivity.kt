@@ -176,6 +176,10 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
         return true
     }
 
+    override fun onMeasurement() {
+        moList.clear()
+    }
+
     override fun onGetReadings(readingData: List<BpMeasurement>) {
         println("Readings Data on Activity $readingData")
         runOnUiThread {

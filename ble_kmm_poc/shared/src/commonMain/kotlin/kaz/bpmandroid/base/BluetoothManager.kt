@@ -50,7 +50,7 @@ class BluetoothManager(
             }
             is BleState.CharacteristicChanged -> {
                 println("CharacteristicChanged ${state.characteristic}")
-                doNextCharacteristicOperations(state.characteristic, state.device)
+                doNextCharacteristicOperations(state.characteristic, state.device, "notified")
             }
             is BleState.CharacteristicsDiscovered -> {
                 for (char in state.chars) {
@@ -87,12 +87,12 @@ class BluetoothManager(
             }
             is BleState.CharacteristicWrite -> {
                 println("CharacteristicWrite ${state.characteristic}")
-                doNextCharacteristicOperations(state.characteristic, state.device)
+                doNextCharacteristicOperations(state.characteristic, state.device, "write")
 
             }
             is BleState.CharacteristicRead -> {
                 println("CharacteristicRead ${state.characteristic}")
-                doNextCharacteristicOperations(state.characteristic, state.device)
+                doNextCharacteristicOperations(state.characteristic, state.device, "read")
             }
 
             else -> {}
@@ -100,42 +100,63 @@ class BluetoothManager(
     }
 
     private fun doNextCharacteristicOperations(
-        characteristic: BleCharacteristic, device: BluetoothDevice
+        characteristic: BleCharacteristic, device: BluetoothDevice, characteristicState: String
     ) {
         if (characteristic.id.equals(Utils.BPM_USER_NAME_CHAR, true)) {
             println("doNextCharacteristicOperations Utils.BPM_USER_NAME_CHAR")
             var data = characteristic.value
+            moUserNumber = data!![0].toInt()
+
+            println("UserNumber$moUserNumber")
             /*         moUserNumber = data!![0].toInt()
                      println("Before UserNumber$moUserNumber")
                      moUserNumber = 1
                      println("NameData$data")
                      println("AfterUserNumber$moUserNumber")*/
             //pairDevice(device)
-            moConnectDisconnectListener.onReadyForPair(device)
+            if (characteristicState.equals("write")) {
+                moConnectDisconnectListener.onReadyForPair(device)
+            }
 
         } else if (characteristic.id.equals(
                 Utils.BPM_PAIRING_CHAR, true
-            ) || characteristic.id.equals(Utils.PRESSURE_MEASUREMENT_CHAR, true)
+            )
         ) {
-            readDataFromDevice(device, Utils.UUID_KAZ_BPM_SERVICE, Utils.BPM_NUM_READINGS_CHAR)
+            if (characteristicState.equals("write")) {
+                println("doNextCharacteristicOperations " + characteristic.id)
+                readDataFromDevice(device, Utils.UUID_KAZ_BPM_SERVICE, Utils.BPM_NUM_READINGS_CHAR)
+            }
+        } else if (characteristic.id.equals(Utils.PRESSURE_MEASUREMENT_CHAR, true)) {
+            if (characteristicState.equals("notified")) {
+                println("doNextCharacteristicOperations " + characteristic.id)
+                moReadingDataListener.onMeasurement()
+                readDataFromDevice(device, Utils.UUID_KAZ_BPM_SERVICE, Utils.BPM_NUM_READINGS_CHAR)
+            }
         } else if (characteristic.id.equals(Utils.BPM_NUM_READINGS_CHAR, true)) {
-            readAndGetTheDataFromDevice(characteristic, device)
+            if (characteristicState.equals("read")) {
+                println("doNextCharacteristicOperations Utils.BPM_NUM_READINGS_CHAR")
+                readAndGetTheDataFromDevice(characteristic, device)
+            }
         } else if (characteristic.id.equals(Utils.BPM_REQUESTED_READING_CHAR, true)) {
-            moReadings = ArrayList()
-            val deviceInfo = peripheralsDiscovered!![device.id]
-            val meas = getBpMeasurement(
-                characteristic.value!!, deviceInfo!!
-            )
-            println(
-                "Reading downloaded ++ systolic " + meas!!.systolic.toString() + ", Diastolic " + meas.diastolic.toString() + ", pulse " + meas.pulse.toString() + ", Date " + meas.day.toString() + ", " + meas.month.toString()
-            )
-            moReadings!!.add(meas)
+            if (characteristicState.equals("notified")) {
+                println("doNextCharacteristicOperations Utils.BPM_REQUESTED_READING_CHAR")
+                moReadings = ArrayList()
+                val deviceInfo = peripheralsDiscovered!![device.id]
+                val meas = getBpMeasurement(
+                    characteristic.value!!, deviceInfo!!
+                )
+                println(
+                    "Reading downloaded ++ systolic " + meas!!.systolic.toString() + ", Diastolic " + meas.diastolic.toString() + ", pulse " + meas.pulse.toString() + ", Date " + meas.day.toString() + ", " + meas.month.toString()
+                )
+                moReadings!!.add(meas)
 
-            moReadingDataListener.onGetReadings(moReadings!!)
-            println("Index $miCurrentReadingIndex$miTotalReadingIndex")
-            if (miCurrentReadingIndex < miTotalReadingIndex) {
-                miCurrentReadingIndex++
-                prepareToGetTheHistoryData(moUserNumber, miCurrentReadingIndex, device)
+                moReadingDataListener.onGetReadings(moReadings!!)
+                println("Index before $miCurrentReadingIndex$miTotalReadingIndex")
+                if (miCurrentReadingIndex < miTotalReadingIndex) {
+                    miCurrentReadingIndex++
+                    println("Index after add $miCurrentReadingIndex$miTotalReadingIndex")
+                    prepareToGetTheHistoryData(moUserNumber, miCurrentReadingIndex, device)
+                }
             }
 
 
@@ -189,6 +210,7 @@ class BluetoothManager(
             println("Readings added Number of stored readings for user == ${numReadings}")
             miTotalReadingIndex = numReadings
             if (numReadings != 0) {
+                miCurrentReadingIndex = 0
                 prepareToGetTheHistoryData(userNumber, miCurrentReadingIndex, device)
             }
 

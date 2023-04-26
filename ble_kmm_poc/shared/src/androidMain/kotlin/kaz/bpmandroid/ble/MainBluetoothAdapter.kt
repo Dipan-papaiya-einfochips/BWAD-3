@@ -42,6 +42,7 @@ actual class MainBluetoothAdapter(
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             val device = result?.device
+            /*     result.scanRecord.bytes*/
             if (device != null) {
                 handler?.invoke(BluetoothDevice(device.address, device.name ?: "", device))
                 stopScan()
@@ -292,7 +293,7 @@ actual class MainBluetoothAdapter(
         charUUID: String
     ) {
         runBlocking {
-            delay(300)
+            delay(100)
             val gatt = getGatt(service.device)
             val bleChar = getCharWithServiceAndCharacteristic(gatt, serviceUUID, charUUID)
             var liResult = 1

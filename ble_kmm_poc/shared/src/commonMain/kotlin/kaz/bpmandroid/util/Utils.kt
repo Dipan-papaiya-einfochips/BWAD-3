@@ -55,7 +55,7 @@ class Utils {
         fun setUserName(fsName: String): ByteArray {
             var name = fsName
 
-            var userID = 0
+            var userID = 1
             var write = true
             // max len is 17 because of the 2 bytes for index, write flag, and the null character
             val nameLen = max(name.length, 17)
