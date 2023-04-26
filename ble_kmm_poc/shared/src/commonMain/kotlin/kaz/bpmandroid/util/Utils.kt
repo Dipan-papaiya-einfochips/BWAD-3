@@ -62,7 +62,7 @@ class Utils {
             val nameData = ByteArray(nameLen + 3)
             var index = 0
             nameData[index++] = (userID.toByte().toInt() and 0xFF).toByte()
-            nameData[index++] = 0.toByte()
+            nameData[index++] = 1.toByte()
             if (name.isNotBlank() && name.isNotEmpty()) {
                 // copy the name into the packet
                 var i = 0

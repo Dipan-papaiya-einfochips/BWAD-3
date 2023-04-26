@@ -104,10 +104,13 @@ class BluetoothManager(
     ) {
         if (characteristic.id.equals(Utils.BPM_USER_NAME_CHAR, true)) {
             var data = characteristic.value
-            moUserNumber = data!![0].toInt()
-            println("NameData$data")
-            println("UserNumber$moUserNumber")
-            pairDevice(device)
+            /*         moUserNumber = data!![0].toInt()
+                     println("Before UserNumber$moUserNumber")
+                     moUserNumber = 1
+                     println("NameData$data")
+                     println("AfterUserNumber$moUserNumber")*/
+            //pairDevice(device)
+            moConnectDisconnectListener.onReadyForPair(device)
 
         } else if (characteristic.id.equals(
                 Utils.BPM_PAIRING_CHAR, true
@@ -182,7 +185,7 @@ class BluetoothManager(
             } else if (userNumber == 1) {
                 numReadings = deviceInfo.user1NumReadings
             }
-            println("Readings added Number of stored readings for user == ${deviceInfo.user1NumReadings}")
+            println("Readings added Number of stored readings for user == ${numReadings}")
             miTotalReadingIndex = numReadings
             if (numReadings != 0) {
                 prepareToGetTheHistoryData(userNumber, miCurrentReadingIndex, device)
@@ -200,13 +203,13 @@ class BluetoothManager(
         writeDataToDevice(device, Utils.UUID_KAZ_BPM_SERVICE, Utils.BPM_READING_REQUEST_CHAR, data)
     }
 
-    fun pairDevice(device: BluetoothDevice) {
-        val deviceHash: Long = mainBluetoothAdapter.getBPMHash(mainBluetoothAdapter.randomUUID())
+    fun pairDevice(device: BluetoothDevice, devicehash: Long) {
+        //val deviceHash: Long = mainBluetoothAdapter.getBPMHash(mainBluetoothAdapter.randomUUID())
         writeDataToDevice(
             device,
             Utils.UUID_KAZ_BPM_SERVICE,
             Utils.BPM_PAIRING_CHAR,
-            Utils.getParingHash(moUserNumber, deviceHash)
+            Utils.getParingHash(moUserNumber, devicehash)
         )
 
     }

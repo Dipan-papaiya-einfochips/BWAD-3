@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
         println("displayUserNameOnDevice")
         var loNameByte: Any = Any()
         CoroutineScope(Dispatchers.IO).async {
-            loNameByte = Utils.setUserName("Dipan")
+            loNameByte = Utils.setUserName("Dipan1")
 
             moBleManager.writeDataToDevice(
                 device,
@@ -148,6 +148,11 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
 
     override fun onDisconnect() {
         tv_name.text = "Device disconnected"
+    }
+
+    override fun onReadyForPair(device: BluetoothDevice) {
+        val deviceHash: Long = mainBluetoothAdapter.getBPMHash(mainBluetoothAdapter.randomUUID())
+        moBleManager.pairDevice(device, deviceHash)
     }
 
     override fun onResume() {

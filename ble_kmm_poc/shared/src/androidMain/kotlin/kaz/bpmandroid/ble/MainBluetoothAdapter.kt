@@ -21,6 +21,8 @@ import kaz.bpmandroid.base.IBluetoothManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 @SuppressLint("MissingPermission")
 actual class MainBluetoothAdapter(
@@ -289,32 +291,38 @@ actual class MainBluetoothAdapter(
         serviceUUID: String,
         charUUID: String
     ) {
-        val gatt = getGatt(service.device)
-        val bleChar = getCharWithServiceAndCharacteristic(gatt, serviceUUID, charUUID)
-        var liResult = 1
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            liResult = device.gatt!!.writeCharacteristic(
-                bleChar, payload, bleChar.writeType
-            )
-        } else {
-            var lbResult = device.gatt!!.writeCharacteristic(bleChar)
-            if (lbResult) {
-                liResult = 0
-            }
+        runBlocking {
+            delay(300)
+            val gatt = getGatt(service.device)
+            val bleChar = getCharWithServiceAndCharacteristic(gatt, serviceUUID, charUUID)
+            var liResult = 1
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                liResult = device.gatt!!.writeCharacteristic(
+                    bleChar, payload, bleChar.writeType
+                )
+            } else {
+                var lbResult = device.gatt!!.writeCharacteristic(bleChar)
+                if (lbResult) {
+                    liResult = 0
+                }
 
+            }
+            println("Write Result: $liResult $charUUID")
         }
-        println("Write Result: $liResult $charUUID")
 
     }
 
     actual fun characteristicsRead(
         device: BluetoothDevice, service: BleService, serviceUUID: String, charUUID: String
     ) {
-        println("characteristicsRead: $serviceUUID $charUUID")
-        val gatt = getGatt(service.device)
-        val bleChar = getCharWithServiceAndCharacteristic(gatt, serviceUUID, charUUID)
-        var liResult = device.gatt!!.readCharacteristic(bleChar)
-        println("Read Result: $liResult $charUUID")
+        runBlocking {
+            delay(100)
+            println("characteristicsRead: $serviceUUID $charUUID")
+            val gatt = getGatt(service.device)
+            val bleChar = getCharWithServiceAndCharacteristic(gatt, serviceUUID, charUUID)
+            var liResult = device.gatt!!.readCharacteristic(bleChar)
+            println("Read Result: $liResult $charUUID")
+        }
     }
 
 
