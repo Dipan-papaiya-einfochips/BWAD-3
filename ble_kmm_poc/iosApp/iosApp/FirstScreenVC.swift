@@ -136,7 +136,7 @@ extension FirstScreenVC : IBleConnectDisconnectListener{
     }
     
     func writeProfileNameOnDevice(strName : String, device: BluetoothDevice){
-        let  bytesName = Utils.companion.setUserName(fsName:strName)
+        let  bytesName = Utils.companion.setUserName(fsName:strName, loUSerId: 0,lbWrite: true)
         DispatchQueue.main.async {
             self.bleManager?.writeDataToDevice(foDevice: device, serviceUUID: Utils.companion.UUID_KAZ_BPM_SERVICE, charUUID: Utils.companion.BPM_USER_NAME_CHAR, payload: bytesName)
         }
