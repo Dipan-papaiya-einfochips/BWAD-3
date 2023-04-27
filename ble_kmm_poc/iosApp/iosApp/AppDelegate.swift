@@ -14,7 +14,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         debugPrint("App Delegate started")
-        Thread.sleep(forTimeInterval: 1.5) //increased splash time programatically
         self.window = UIWindow(frame: UIScreen.main.bounds)
         if let windowObj = self.window {
             self.setRootViewForApplication(window: windowObj) //navigate as per login

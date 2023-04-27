@@ -50,11 +50,17 @@ class BluetoothManager(
             }
             is BleState.CharacteristicChanged -> {
                 println("CharacteristicChanged ${state.characteristic}")
-                doNextCharacteristicOperations(state.characteristic, state.device, "notified")
+                if (state.characteristic.id.equals(Utils.BPM_USER_NAME_CHAR, true)){
+                    doNextCharacteristicOperations(state.characteristic, state.device, "write")
+                }else if (state.characteristic.id.equals(Utils.BPM_NUM_READINGS_CHAR, true)){
+                    doNextCharacteristicOperations(state.characteristic, state.device, "read")
+                }else{
+                    doNextCharacteristicOperations(state.characteristic, state.device, "notified")
+                }
             }
             is BleState.CharacteristicsDiscovered -> {
+                println("Characteristics discovered ${state.chars}")
                 for (char in state.chars) {
-                    println("Characteristics discovered ${state.chars}")
                     runBlocking {
                         delay(100)
                         mainBluetoothAdapter.setNotificationEnabled(char)

@@ -10,8 +10,25 @@ import UIKit
 import shared
 
 class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
+    func onMeasurement(){
+        debugPrint("get new measurement")
+        readStoredReadingsArr = []
+    }
+    
     func onGetReadings(readingData: [BpMeasurement]) {
-        debugPrint("onGetReadings ")
+        readStoredReadingsArr.append(readingData[0])
+        if readStoredReadingsArr.count == 1{
+            DispatchQueue.main.async {
+                self.tblView.reloadData()
+            }
+        }else{
+            DispatchQueue.main.async {
+                self.tblView.beginUpdates()
+                self.tblView.insertRows(at: [IndexPath.init(row: self.readStoredReadingsArr.count-1, section: 0)], with: .automatic)
+                self.tblView.endUpdates()
+            }
+        }
+        debugPrint("onGetReadings \(readingData.count)", readingData[0].diastolic)
     }
     
     func invokeListeners(invoker: @escaping (Any?) -> Void) {
@@ -58,6 +75,9 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
     var service: BleService?
     var device : BluetoothDevice?
     var bleState: KAZDeviceStatus?
+    
+    @IBOutlet weak var tblView: UITableView!
+    var readStoredReadingsArr : [BpMeasurement] = []
     override func viewDidLoad() {
         super.viewDidLoad()
         debugPrint("FirstScreenVC didLoad method called")
@@ -108,7 +128,7 @@ extension FirstScreenVC : IBleConnectDisconnectListener{
     
     func onConnect(device: BluetoothDevice) {
         debugPrint("onConnect")
-        writeProfileNameOnDevice(strName: "Mohini1", device: device)
+        writeProfileNameOnDevice(strName: "Mohini", device: device)
     }
     
     func onDisconnect() {
@@ -122,4 +142,19 @@ extension FirstScreenVC : IBleConnectDisconnectListener{
         }
     }
     
+}
+extension FirstScreenVC: UITableViewDataSource{
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return readStoredReadingsArr.count
+    }
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ReadDataTableViewCell") as? ReadDataTableViewCell else {
+            return UITableViewCell()
+        }
+        cell.showReadings(dict: readStoredReadingsArr[indexPath.row], index: indexPath.row)
+        return cell
+    }
 }

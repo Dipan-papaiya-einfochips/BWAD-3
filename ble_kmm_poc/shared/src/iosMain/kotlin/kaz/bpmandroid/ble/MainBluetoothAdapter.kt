@@ -21,7 +21,7 @@ actual class MainBluetoothAdapter {
     private var connectedDevice: BluetoothDevice? = null
     private var discoveredServices: ArrayList<BleService> = ArrayList()
     var connectingPeripheral: CBPeripheral? = null
-    private var writeCharacteristic: CBCharacteristic? = null
+
 
     // list of CBCharacteristics to discover
     private var discoverCharacteristics: MutableList<CBCharacteristic> = mutableListOf()
@@ -103,8 +103,31 @@ actual class MainBluetoothAdapter {
                             )
                         ) {
                             println("writeCharacteristic init")
-                            writeCharacteristic = characteristic
                         }
+//                        else if (characteristic.UUID.UUIDString.contains(
+//                                Utils.BPM_NUM_READINGS_CHAR,
+//                                true
+//                            )
+//                        ) {
+//                            println("readCharacteristic")
+//                            runBlocking {
+//                                delay(500)
+//                                peripheral.readValueForCharacteristic(characteristic)
+//                            }
+//                            peripheral.readValueForCharacteristic(characteristic)
+//                        }
+//                        else if (characteristic.UUID.UUIDString.contains(
+//                                Utils.BPM_PAIRING_CHAR,
+//                                true
+//                            )
+//                        ) {
+//                            println("readCharacteristic")
+//                            runBlocking {
+//                                delay(500)
+//                                peripheral.readValueForCharacteristic(characteristic)
+//                            }
+//
+//                        }
                         discoverCharacteristics.add(cbCharacteristic)
                     }
                 }
@@ -121,28 +144,19 @@ actual class MainBluetoothAdapter {
                 var service = didUpdateValueForCharacteristic.service
                 var chUUID = didUpdateValueForCharacteristic.UUID.UUIDString
                 println("didUpdateValueForCharacteristic chUUID : " + chUUID)
-                if (service != null) {
-                    if (service.UUID.UUIDString == Utils.UUID_KAZ_BPM_SERVICE) {
-                        println("UUID_KAZ_BPM_SERVICE")
-                        if (chUUID == Utils.BPM_USER_NAME_CHAR) {
-                            println("UUID_BPM_USER_NAME_CHAR")
-                            for (currentService in discoveredServices) {
-                                println("discoveredServices currentService id: " + currentService.id)
-                                if (currentService.id == Utils.UUID_KAZ_BPM_SERVICE) {
-                                    println("id discovered")
-                                    listener?.onStateChange(
-                                        BleState.CharacteristicChanged(
-                                            getDeviceOrThrow(),
-                                            BleCharacteristic(
-                                                didUpdateValueForCharacteristic,
-                                                currentService
-                                            )
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
+
+                var loBleService = BleService(service!!.UUID.UUIDString(),getDeviceOrThrow())
+                if ((service.UUID.UUIDString == Utils.UUID_KAZ_BPM_SERVICE) || (service.UUID.UUIDString == Utils.PRESSURE_MEASUREMENT_CHAR)) {
+                    println("didUpdateValueForCharacteristic onStateChange : " + chUUID)
+                    listener?.onStateChange(
+                        BleState.CharacteristicChanged(
+                            getDeviceOrThrow(),
+                            BleCharacteristic(
+                                didUpdateValueForCharacteristic,
+                                loBleService
+                            )
+                        )
+                    )
                 }
             }
         }
@@ -260,6 +274,17 @@ actual class MainBluetoothAdapter {
         serviceUUID: String,
         charUUID: String
     ) {
+        println("characteristicsRead called")
+        val characteristics = discoverCharacteristics
+        if (characteristics != null && characteristics.count() > 0) {
+            for (characteristic in characteristics!!) {
+                val cbCharacteristic = characteristic as CBCharacteristic
+                if (characteristic.UUID.UUIDString.contains(charUUID, true)) {
+                    device.peripheral.readValueForCharacteristic(characteristic)
+                }
+            }
+        }
+
     }
 
     actual fun characteristicWrite(
