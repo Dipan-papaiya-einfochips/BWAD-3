@@ -7,28 +7,34 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
 import android.util.Log
-import java.lang.reflect.Array.getChar
 import java.nio.ByteBuffer
 import java.util.*
 import java.util.zip.CRC32
 import java.util.zip.Checksum
 import kaz.bpmandroid.base.IBluetoothManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kaz.bpmandroid.model.DeviceInfo
+import kaz.bpmandroid.util.Utils.Companion.DeviceModel4500
+import kaz.bpmandroid.util.Utils.Companion.DeviceModel6350
+import kaz.bpmandroid.util.Utils.Companion.PAIRING_USER1_PAIRABLE
+import kaz.bpmandroid.util.Utils.Companion.PAIRING_USER2_PAIRABLE
+import kaz.bpmandroid.util.Utils.Companion.peripheralsDiscovered
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+
 
 @SuppressLint("MissingPermission")
 actual class MainBluetoothAdapter(
     private val context: Context
 ) : BluetoothGattCallback() {
-
+    var moConnectedUserID = 0
+    var moScanResult: ScanResult? = null
     private val mainThreadHandler = Handler(Looper.getMainLooper())
 
     private val bluetoothManager: BluetoothManager
@@ -42,12 +48,96 @@ actual class MainBluetoothAdapter(
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             val device = result?.device
-            /*     result.scanRecord.bytes*/
             if (device != null) {
-                handler?.invoke(BluetoothDevice(device.address, device.name ?: "", device))
+                var loBluetoothDevice = BluetoothDevice(device.address, device.name ?: "", device)
+                if (result.scanRecord != null) {
+                    moScanResult = result
+                    parseScanResult(moScanResult!!, loBluetoothDevice)
+                }
+                handler?.invoke(loBluetoothDevice)
                 stopScan()
             }
         }
+    }
+
+    private fun parseScanResult(moScanResult: ScanResult, device: BluetoothDevice) {
+
+        var x = 0
+        val advData: ByteArray = moScanResult.scanRecord!!.bytes
+        var manufacturerData: ByteArray? = null
+
+        while (x < advData.size) {
+            val lengthByte = advData[x++]
+            if (lengthByte.toInt() == 0) {
+                break
+            }
+            if (advData[x] == 0xFF.toByte()) {
+                manufacturerData = Arrays.copyOfRange(advData, x + 1, x + lengthByte)
+                break
+            }
+            x += lengthByte.toInt()
+        }
+
+        if (manufacturerData != null && manufacturerData.size > 16) {
+            println("Manufacture data is missing or corrupt ")
+            return
+        }
+
+        val deviceModel = (manufacturerData!![0].toInt() and 0xFF).toByte()
+        val numUsers = (manufacturerData!![1].toInt() and 0x0f).toByte()
+        val pairable = (manufacturerData!![1].toInt() and 0x30).toByte()
+        val led = (manufacturerData!![1].toInt() and 0x40 shr 6).toByte()
+
+        var user1Hash: Long = 0
+        user1Hash = user1Hash or (manufacturerData[2].toLong() shl 16 and 0x00FF0000L)
+        user1Hash = user1Hash or (manufacturerData[3].toLong() shl 8 and 0x0000FF00L)
+        user1Hash = user1Hash or (manufacturerData[4].toLong() shl 0 and 0x000000FFL)
+
+
+        var user2Hash: Long = 0
+        user2Hash = user2Hash or (manufacturerData[5].toLong() shl 16 and 0x00FF0000L)
+        user2Hash = user2Hash or (manufacturerData[6].toLong() shl 8 and 0x0000FF00L)
+        user2Hash = user2Hash or (manufacturerData[7].toLong() shl 0 and 0x000000FFL)
+
+        val macAddr: String = device.id
+
+        var info: DeviceInfo? = peripheralsDiscovered!!.get(macAddr)
+
+        if (info == null) {
+            info = DeviceInfo()
+            peripheralsDiscovered!!.put(macAddr, info)
+        }
+
+        info.deviceModel = deviceModel.toInt()
+        info.numUsers = numUsers.toInt()
+
+
+        info.user0Pairable = (pairable.toInt() and PAIRING_USER1_PAIRABLE) != 0
+        info.user1Pairable = (pairable.toInt() and PAIRING_USER2_PAIRABLE) != 0
+
+        info.ledActivated = led.toInt()
+        info.user1Hash = user1Hash
+        info.user2Hash = user2Hash
+        info.macAddress = macAddr
+
+        if (info.user0Pairable) {
+            moConnectedUserID = 0
+        } else if (info.user1Pairable) {
+            moConnectedUserID = 1
+        }
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("BPM", MODE_PRIVATE)
+        val myEdit = sharedPreferences.edit()
+        myEdit.putInt("UserID", moConnectedUserID)
+
+        if (info.deviceModel == DeviceModel4500) {
+            myEdit.putBoolean("ShouldWrite", true)
+        } else {
+            myEdit.putBoolean("ShouldWrite", false)
+        }
+
+        myEdit.commit()
+
+        println("Connected User ID $moConnectedUserID")
     }
 
     private var connectedDevice: BluetoothDevice? = null
@@ -92,7 +182,7 @@ actual class MainBluetoothAdapter(
                         listener?.onStateChange(BleState.Connected(device))
                     }
                     BluetoothGatt.STATE_DISCONNECTED -> {
-                        listener?.onStateChange(BleState.Disconnected(getDeviceOrThrow()))
+                        listener?.onStateChange(BleState.Disconnected(connectedDevice!!))
                         connectedDevice = null
                     }
                 }

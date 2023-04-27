@@ -8,6 +8,7 @@ import kaz.bpmandroid.ble.MainBluetoothAdapter
 import kaz.bpmandroid.model.BpMeasurement
 import kaz.bpmandroid.model.DeviceInfo
 import kaz.bpmandroid.util.Utils
+import kaz.bpmandroid.util.Utils.Companion.peripheralsDiscovered
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
@@ -15,7 +16,7 @@ class BluetoothManager(
     private val mainBluetoothAdapter: MainBluetoothAdapter
 ) : BaseObservable<IBluetoothManager>(), IBluetoothManager {
     var moServiceList: ArrayList<BleService> = ArrayList()
-    var peripheralsDiscovered: HashMap<String, DeviceInfo>? = HashMap()
+
     var miCurrentReadingIndex = 0
     var miTotalReadingIndex = 0
     lateinit var moConnectDisconnectListener: IBleConnectDisconnectListener
@@ -44,7 +45,6 @@ class BluetoothManager(
     override fun onStateChange(state: BleState) {
         when (state) {
             is BleState.Connected -> {
-                /*view?.showMessage("Connected device ${state.device.name}")*/
                 println("Connected device ${state.device.name}")
                 mainBluetoothAdapter.discoverServices()
             }

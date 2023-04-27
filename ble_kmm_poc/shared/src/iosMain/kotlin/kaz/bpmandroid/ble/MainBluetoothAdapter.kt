@@ -55,7 +55,7 @@ actual class MainBluetoothAdapter {
                 connectedDevice = BluetoothDevice(didConnectPeripheral)
                 connectedDevice.also {
                     println("\n peripheral pass connect device")
-                    listener?.onStateChange(BleState.Connected(connectedDevice!!))
+                    listener?.onStateChange(BleState.Connected(connectedDevice!!, 0))
                 }
             }
             override fun peripheral(peripheral: CBPeripheral, didDiscoverServices: NSError?) {

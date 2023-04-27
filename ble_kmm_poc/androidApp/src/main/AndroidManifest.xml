@@ -30,11 +30,13 @@
 
     <application
         android:allowBackup="false"
+        android:label="@string/appname"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
             android:name=".SplashActivity"
             android:exported="true"
+            android:label="@string/appname"
             android:theme="@style/Theme.AppCompat.Light">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

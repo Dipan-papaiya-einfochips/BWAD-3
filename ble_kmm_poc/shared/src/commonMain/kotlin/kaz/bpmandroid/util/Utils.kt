@@ -1,11 +1,12 @@
 package kaz.bpmandroid.util
 
-import kaz.bpmandroid.ble.BluetoothDevice
+import kaz.bpmandroid.model.DeviceInfo
 import kotlin.math.max
 
 class Utils {
 
     companion object {
+        var peripheralsDiscovered: HashMap<String, DeviceInfo>? = HashMap()
         val PRESSURE_MEASUREMENT_CHAR = "2DB34480-BCE5-4BB7-9F56-55BD202317C5"
         val PRESSURE_INTERMEDIATE_PRESSURE_CHAR = "77AB1C51-2F6B-4A7B-81AF-5E301984BF13"
         val PRESSURE_FEATURE_CHAR = "C3A2ED78-B3F1-4086-AB3B-BF3C5685A745"
@@ -34,6 +35,14 @@ class Utils {
         val UUID_BLOOD_PRESSURE_SERVICE = "56484AAE-A8EB-4A97-AC19-A8EA6373E05A"
         val UUID_BATTERY_SERVICE = "0000180F-0000-1000-8000-00805F9B34FB"
 
+        val PAIRING_USER1_PAIRABLE = 0x10
+        val PAIRING_USER2_PAIRABLE = 0x20
+
+        val DeviceModelUnknown = 0
+        val DeviceModel4500 = 1
+        val DeviceModel7200 = 2
+        val DeviceModel6350 = 3
+
 
         fun getParingHash(
             userNumber: Int, appHash: Long
@@ -52,17 +61,18 @@ class Utils {
             return packet
         }
 
-        fun setUserName(fsName: String): ByteArray {
+        fun setUserName(fsName: String, loUSerId: Int, lbWrite: Boolean): ByteArray {
             var name = fsName
 
-            var userID = 0
-            var write = true
+            var userID = loUSerId
+            var write = lbWrite
             // max len is 17 because of the 2 bytes for index, write flag, and the null character
             val nameLen = max(name.length, 17)
             val nameData = ByteArray(nameLen + 3)
             var index = 0
             nameData[index++] = (userID.toByte().toInt() and 0xFF).toByte()
-            nameData[index++] = 0.toByte()
+            nameData[index++] =
+                (if (write) 1 else 0).toByte() // 0 - for Read , 1 - for Write
             if (name.isNotBlank() && name.isNotEmpty()) {
                 // copy the name into the packet
                 var i = 0

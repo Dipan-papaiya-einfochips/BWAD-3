@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
+
 class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleReadDataListener {
 
     private lateinit var mainBluetoothAdapter: MainBluetoothAdapter
@@ -126,15 +127,18 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
         tv_name.text = "Paired device ${device.name}"
         Toast.makeText(this, "Connected device ${device.name}", Toast.LENGTH_SHORT).show()
         moProgressBar.visibility = View.GONE
-        displayUserNameOnDevice(device)
+        val sp = getSharedPreferences("MySharedPref", MODE_PRIVATE)
+        var loUSerId = sp.getInt("UserID", 0)
+        var lbWrite = sp.getBoolean("ShouldWrite", false)
+        displayUserNameOnDevice(device,loUSerId,lbWrite)
 
     }
 
-    private fun displayUserNameOnDevice(device: BluetoothDevice) {
+    private fun displayUserNameOnDevice(device: BluetoothDevice, loUSerId: Int, lbWrite: Boolean) {
         println("displayUserNameOnDevice")
         var loNameByte: Any = Any()
         CoroutineScope(Dispatchers.IO).async {
-            loNameByte = Utils.setUserName("Dipan1")
+            loNameByte = Utils.setUserName("Pankti",loUSerId,lbWrite)
 
             moBleManager.writeDataToDevice(
                 device,
