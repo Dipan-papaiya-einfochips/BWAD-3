@@ -58,14 +58,12 @@ actual class MainBluetoothAdapter {
                     listener?.onStateChange(BleState.Connected(connectedDevice!!))
                 }
             }
-
             override fun peripheral(peripheral: CBPeripheral, didDiscoverServices: NSError?) {
                 val device = getDeviceOrThrow()
                 for (service in peripheral.cbServices) {
                     println("didDiscoverServices" + service.UUID.UUIDString)
                     var loBleService = BleService(service.UUID.UUIDString, device)
                     discoveredServices.add(loBleService)
-
                 }
                 runBlocking {
                     delay(200)
@@ -96,6 +94,23 @@ actual class MainBluetoothAdapter {
                 val characteristics = didDiscoverCharacteristicsForService.characteristics()
                 if (characteristics != null && characteristics.count() > 0) {
                     for (characteristic in characteristics!!) {
+                        peripheral.setNotifyValue(
+                            true,characteristic as CBCharacteristic
+                        )
+                        if (characteristic.UUID.UUIDString.contains(
+                                Utils.BPM_NUM_READINGS_CHAR,
+                                true
+                            )
+                        ) {
+                                    peripheral.readValueForCharacteristic(characteristic)
+                        }
+                        else if (characteristic.UUID.UUIDString.contains(
+                                Utils.BPM_PAIRING_CHAR,
+                                true
+                            )
+                        ) {
+                                      peripheral.readValueForCharacteristic(characteristic)
+                        }
                         discoverCharacteristics.add(characteristic as CBCharacteristic)
                     }
                 }
@@ -107,37 +122,17 @@ actual class MainBluetoothAdapter {
                 didUpdateValueForCharacteristic: CBCharacteristic,
                 error: NSError?
             ) {
-                println("\n didUpdateValueForCharacteristic")
+                println("\n didUpdateValueForCharacteristi6c")
                 println("didUpdateValueForCharacteristic size count ${discoveredServices!!.size}")
                 var service = didUpdateValueForCharacteristic.service
                 var chUUID = didUpdateValueForCharacteristic.UUID.UUIDString
                 println("didUpdateValueForCharacteristic chUUID : " + chUUID)
 
                 var loBleService = BleService(service!!.UUID.UUIDString(),getDeviceOrThrow())
+                println("didUpdateValueForCharacteristic service UUID : " + service.UUID.UUIDString)
                 if ((service.UUID.UUIDString == Utils.UUID_KAZ_BPM_SERVICE) || (service.UUID.UUIDString == Utils.UUID_BLOOD_PRESSURE_SERVICE)) {
                     println("didUpdateValueForCharacteristic onStateChange : " + chUUID)
                     if (chUUID.equals(Utils.BPM_USER_NAME_CHAR, true)){
-
-                        val characteristics = discoverCharacteristics
-                        if (characteristics != null && characteristics.count() > 0) {
-                            for (characteristic in characteristics!!) {
-                                val cbCharacteristic = characteristic as CBCharacteristic
-                                if (characteristic.UUID.UUIDString.contains(
-                                        Utils.BPM_NUM_READINGS_CHAR,
-                                        true
-                                    )
-                                ) {
-                                    peripheral.readValueForCharacteristic(characteristic)
-                                }
-                                /*  else if (characteristic.UUID.UUIDString.contains(
-                                          Utils.BPM_PAIRING_CHAR,
-                                          true
-                                      )
-                                  ) {
-                                      peripheral.readValueForCharacteristic(characteristic)
-                                  }*/
-                            }
-                        }
                         listener?.onStateChange(
                             BleState.CharacteristicWrite(
                                 getDeviceOrThrow(),

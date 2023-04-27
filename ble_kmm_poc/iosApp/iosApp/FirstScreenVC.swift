@@ -20,17 +20,11 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
     
     func onGetReadings(readingData: [BpMeasurement]) {
         readStoredReadingsArr.append(readingData[0])
-        if readStoredReadingsArr.count == 1{
-            DispatchQueue.main.async {
-                self.tblView.reloadData()
-            }
-        }else{
+      if readStoredReadingsArr.count > 1{
             readStoredReadingsArr = readStoredReadingsArr.reversed()
-            DispatchQueue.main.async {
-                self.tblView.beginUpdates()
-                self.tblView.insertRows(at: [IndexPath.init(row: self.readStoredReadingsArr.count-1, section: 0)], with: .automatic)
-                self.tblView.endUpdates()
-            }
+        }
+        DispatchQueue.main.async {
+            self.tblView.reloadData()
         }
         debugPrint("onGetReadings \(readingData.count)", readingData[0].diastolic)
     }
@@ -127,16 +121,17 @@ extension FirstScreenVC : IBleConnectDisconnectListener{
     func onReadyForPair(device: BluetoothDevice) {
         debugPrint("onReadyForPair")
         let bpmHash = BLEUtils.bpmHash(UUID().uuidString)
-        self.lblText.text = "Connected Device : \(device.name)"
         self.bleManager?.pairDevice(device: device, devicehash: Int64(bpmHash))
     }
     
     func onConnect(device: BluetoothDevice) {
         debugPrint("onConnect")
+        self.lblText.text = "Connected Device : \(device.name)"
         writeProfileNameOnDevice(strName: "Mohini", device: device)
     }
     
     func onDisconnect() {
+        self.lblText.text = "Device get disconnected"
         debugPrint("onDisconnect")
     }
     
