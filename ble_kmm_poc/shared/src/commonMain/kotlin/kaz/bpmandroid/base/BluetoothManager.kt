@@ -50,13 +50,7 @@ class BluetoothManager(
             }
             is BleState.CharacteristicChanged -> {
                 println("CharacteristicChanged ${state.characteristic}")
-                if (state.characteristic.id.equals(Utils.BPM_USER_NAME_CHAR, true)){
-                    doNextCharacteristicOperations(state.characteristic, state.device, "write")
-                }else if (state.characteristic.id.equals(Utils.BPM_NUM_READINGS_CHAR, true)){
-                    doNextCharacteristicOperations(state.characteristic, state.device, "read")
-                }else{
-                    doNextCharacteristicOperations(state.characteristic, state.device, "notified")
-                }
+                doNextCharacteristicOperations(state.characteristic, state.device, "notified")
             }
             is BleState.CharacteristicsDiscovered -> {
                 println("Characteristics discovered ${state.chars}")

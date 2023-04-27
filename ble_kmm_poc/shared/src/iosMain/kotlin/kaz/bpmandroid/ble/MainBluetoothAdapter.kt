@@ -96,39 +96,7 @@ actual class MainBluetoothAdapter {
                 val characteristics = didDiscoverCharacteristicsForService.characteristics()
                 if (characteristics != null && characteristics.count() > 0) {
                     for (characteristic in characteristics!!) {
-                        val cbCharacteristic = characteristic as CBCharacteristic
-                        if (characteristic.UUID.UUIDString.contains(
-                                Utils.BPM_USER_NAME_CHAR,
-                                true
-                            )
-                        ) {
-                            println("writeCharacteristic init")
-                        }
-//                        else if (characteristic.UUID.UUIDString.contains(
-//                                Utils.BPM_NUM_READINGS_CHAR,
-//                                true
-//                            )
-//                        ) {
-//                            println("readCharacteristic")
-//                            runBlocking {
-//                                delay(500)
-//                                peripheral.readValueForCharacteristic(characteristic)
-//                            }
-//                            peripheral.readValueForCharacteristic(characteristic)
-//                        }
-//                        else if (characteristic.UUID.UUIDString.contains(
-//                                Utils.BPM_PAIRING_CHAR,
-//                                true
-//                            )
-//                        ) {
-//                            println("readCharacteristic")
-//                            runBlocking {
-//                                delay(500)
-//                                peripheral.readValueForCharacteristic(characteristic)
-//                            }
-//
-//                        }
-                        discoverCharacteristics.add(cbCharacteristic)
+                        discoverCharacteristics.add(characteristic as CBCharacteristic)
                     }
                 }
                 listener?.onStateChange(BleState.CharacteristicsDiscovered(device, chars))
@@ -146,17 +114,61 @@ actual class MainBluetoothAdapter {
                 println("didUpdateValueForCharacteristic chUUID : " + chUUID)
 
                 var loBleService = BleService(service!!.UUID.UUIDString(),getDeviceOrThrow())
-                if ((service.UUID.UUIDString == Utils.UUID_KAZ_BPM_SERVICE) || (service.UUID.UUIDString == Utils.PRESSURE_MEASUREMENT_CHAR)) {
+                if ((service.UUID.UUIDString == Utils.UUID_KAZ_BPM_SERVICE) || (service.UUID.UUIDString == Utils.UUID_BLOOD_PRESSURE_SERVICE)) {
                     println("didUpdateValueForCharacteristic onStateChange : " + chUUID)
-                    listener?.onStateChange(
-                        BleState.CharacteristicChanged(
-                            getDeviceOrThrow(),
-                            BleCharacteristic(
-                                didUpdateValueForCharacteristic,
-                                loBleService
+                    if (chUUID.equals(Utils.BPM_USER_NAME_CHAR, true)){
+
+                        val characteristics = discoverCharacteristics
+                        if (characteristics != null && characteristics.count() > 0) {
+                            for (characteristic in characteristics!!) {
+                                val cbCharacteristic = characteristic as CBCharacteristic
+                                if (characteristic.UUID.UUIDString.contains(
+                                        Utils.BPM_NUM_READINGS_CHAR,
+                                        true
+                                    )
+                                ) {
+                                    peripheral.readValueForCharacteristic(characteristic)
+                                }
+                                /*  else if (characteristic.UUID.UUIDString.contains(
+                                          Utils.BPM_PAIRING_CHAR,
+                                          true
+                                      )
+                                  ) {
+                                      peripheral.readValueForCharacteristic(characteristic)
+                                  }*/
+                            }
+                        }
+                        listener?.onStateChange(
+                            BleState.CharacteristicWrite(
+                                getDeviceOrThrow(),
+                                BleCharacteristic(
+                                    didUpdateValueForCharacteristic,
+                                    loBleService
+                                )
                             )
                         )
-                    )
+                    }else if (chUUID.equals(Utils.BPM_NUM_READINGS_CHAR, true)){
+                        listener?.onStateChange(
+                            BleState.CharacteristicRead(
+                                getDeviceOrThrow(),
+                                BleCharacteristic(
+                                    didUpdateValueForCharacteristic,
+                                    loBleService
+                                )
+                            )
+                        )
+                    }else{
+                        listener?.onStateChange(
+                            BleState.CharacteristicChanged(
+                                getDeviceOrThrow(),
+                                BleCharacteristic(
+                                    didUpdateValueForCharacteristic,
+                                    loBleService
+                                )
+                            )
+                        )
+                    }
+
                 }
             }
         }

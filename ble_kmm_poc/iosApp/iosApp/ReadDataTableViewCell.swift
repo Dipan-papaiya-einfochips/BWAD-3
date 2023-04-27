@@ -8,7 +8,9 @@
 import UIKit
 import shared
 class ReadDataTableViewCell: UITableViewCell {
-
+    
+    @IBOutlet weak var vwHeader: UIView!
+    @IBOutlet weak var vwDetails: UIView!
     
     @IBOutlet weak var lblHeader: UILabel!{
         didSet{
@@ -27,9 +29,9 @@ class ReadDataTableViewCell: UITableViewCell {
     
     func showReadings(dict : BpMeasurement?, index: Int){
         if let dictCurrent = dict{
-            lblHeader.isHidden = true
+            vwHeader.isHidden = true
             if index == 0{
-                lblHeader.isHidden = false
+                vwHeader.isHidden = false
                 lblHeader.text = "Last Reading"
             }else{
                 lblHeader.text = ""

@@ -13,6 +13,9 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
     func onMeasurement(){
         debugPrint("get new measurement")
         readStoredReadingsArr = []
+        DispatchQueue.main.async {
+            self.tblView.reloadData()
+        }
     }
     
     func onGetReadings(readingData: [BpMeasurement]) {
@@ -22,6 +25,7 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
                 self.tblView.reloadData()
             }
         }else{
+            readStoredReadingsArr = readStoredReadingsArr.reversed()
             DispatchQueue.main.async {
                 self.tblView.beginUpdates()
                 self.tblView.insertRows(at: [IndexPath.init(row: self.readStoredReadingsArr.count-1, section: 0)], with: .automatic)
@@ -123,6 +127,7 @@ extension FirstScreenVC : IBleConnectDisconnectListener{
     func onReadyForPair(device: BluetoothDevice) {
         debugPrint("onReadyForPair")
         let bpmHash = BLEUtils.bpmHash(UUID().uuidString)
+        self.lblText.text = "Connected Device : \(device.name)"
         self.bleManager?.pairDevice(device: device, devicehash: Int64(bpmHash))
     }
     
