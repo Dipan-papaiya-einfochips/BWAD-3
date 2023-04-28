@@ -37,6 +37,7 @@ class BluetoothManager(
     }
 
     fun scanAndConnect() {
+//        mainBluetoothAdapter.listener = this
         mainBluetoothAdapter.discoverDevices {
             mainBluetoothAdapter.connect(it)
         }

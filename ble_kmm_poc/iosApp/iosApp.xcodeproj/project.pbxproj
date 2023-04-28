@@ -11,7 +11,6 @@
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
 		960533D129F9274A00DF4F88 /* BLEUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 960533CE29F9274A00DF4F88 /* BLEUtils.m */; };
 		9612A5C129F113F100AE0C42 /* KazBleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9612A5C029F113F100AE0C42 /* KazBleManager.swift */; };
-		9612A5C329F11B3300AE0C42 /* SecondScreenVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9612A5C229F11B3300AE0C42 /* SecondScreenVC.swift */; };
 		9657A64D29EFD62600432A77 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9657A64C29EFD62600432A77 /* AppDelegate.swift */; };
 		9657A65129EFD67400432A77 /* FirstScreenVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9657A65029EFD67400432A77 /* FirstScreenVC.swift */; };
 		9657A65329EFD6C400432A77 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9657A65229EFD6C400432A77 /* Main.storyboard */; };
@@ -32,7 +31,6 @@
 		960533CE29F9274A00DF4F88 /* BLEUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEUtils.m; sourceTree = "<group>"; };
 		960533D029F9274A00DF4F88 /* BLEUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEUtils.h; sourceTree = "<group>"; };
 		9612A5C029F113F100AE0C42 /* KazBleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KazBleManager.swift; sourceTree = "<group>"; };
-		9612A5C229F11B3300AE0C42 /* SecondScreenVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondScreenVC.swift; sourceTree = "<group>"; };
 		9657A64C29EFD62600432A77 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9657A65029EFD67400432A77 /* FirstScreenVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstScreenVC.swift; sourceTree = "<group>"; };
 		9657A65229EFD6C400432A77 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
@@ -100,7 +98,6 @@
 				9657A65029EFD67400432A77 /* FirstScreenVC.swift */,
 				9657A65229EFD6C400432A77 /* Main.storyboard */,
 				9612A5C029F113F100AE0C42 /* KazBleManager.swift */,
-				9612A5C229F11B3300AE0C42 /* SecondScreenVC.swift */,
 				960533CD29F9274A00DF4F88 /* iosApp-Bridging-Header.h */,
 				968F595B29FA455700EA5EA8 /* ReadDataTableViewCell.swift */,
 			);
@@ -214,7 +211,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9612A5C329F11B3300AE0C42 /* SecondScreenVC.swift in Sources */,
 				968F595C29FA455700EA5EA8 /* ReadDataTableViewCell.swift in Sources */,
 				9612A5C129F113F100AE0C42 /* KazBleManager.swift in Sources */,
 				9657A64D29EFD62600432A77 /* AppDelegate.swift in Sources */,

@@ -10,6 +10,7 @@ import platform.Foundation.NSError
 import platform.Foundation.NSNumber
 import platform.Foundation.NSUUID
 import platform.darwin.NSObject
+import platform.darwin.dispatch_get_main_queue
 
 
 actual class MainBluetoothAdapter {
@@ -166,13 +167,24 @@ actual class MainBluetoothAdapter {
 
                 }
             }
+
+            // This method is called when a device gets disconnected
+            @Suppress("CONFLICTING_OVERLOADS")
+            override fun centralManager(central: CBCentralManager, didDisconnectPeripheral: CBPeripheral, error: NSError?) {
+                connectedDevice = BluetoothDevice(didDisconnectPeripheral)
+                connectedDevice.also {
+                    println("\n peripheral pass connect device")
+                    listener?.onStateChange(BleState.Disconnected(connectedDevice!!))
+                }
+            }
         }
 
-    private val manager = CBCentralManager()
+    private var manager : CBCentralManager? = null
     private var onDeviceReceived: ((BluetoothDevice) -> Unit)? = null
 
     init {
-        manager.delegate = delegateImpl
+        manager = CBCentralManager(delegateImpl, dispatch_get_main_queue())
+        manager?.delegate = delegateImpl
     }
 
     private fun getDeviceOrThrow(): BluetoothDevice {
@@ -188,20 +200,17 @@ actual class MainBluetoothAdapter {
     ///////////////////////////////////////////////////////////////////////////
 
     actual fun discoverDevices(callback: (BluetoothDevice) -> Unit) {
-        val bpmServiceUUID = CBUUID.UUIDWithString(UUID_BLOOD_PRESSURE_SERVICE)
+        val bpmServiceUUID = CBUUID.UUIDWithString(Utils.UUID_BLOOD_PRESSURE_SERVICE)
         println("\n discoverDevices")
-//        manager.scanForPeripheralsWithServices(listOf(bpmServiceUUID), null)
-//        onDeviceReceived = callback
-
         if (isReady) {
             println("\n discoverDevices isReady")
-            manager.scanForPeripheralsWithServices(listOf(bpmServiceUUID), null)
+            manager?.scanForPeripheralsWithServices(listOf(bpmServiceUUID), null)
             onDeviceReceived = callback
         } else {
             whenReady = {
                 println("\n discoverDevices whenReady")
                 whenReady = null
-                manager.scanForPeripheralsWithServices(listOf(bpmServiceUUID), null)
+                manager?.scanForPeripheralsWithServices(listOf(bpmServiceUUID), null)
                 onDeviceReceived = callback
             }
         }
@@ -209,27 +218,27 @@ actual class MainBluetoothAdapter {
 
     actual fun stopScan() {
         println("\n stopScan")
-        manager.stopScan()
+        manager?.stopScan()
         onDeviceReceived = null
     }
 
     actual fun findBondedDevices(callback: (List<BluetoothDevice>) -> Unit) {
         println("\n findBondedDevices")
-        manager.retrieveConnectedPeripheralsWithServices(listOf("180A"))
-            .mapNotNull { it as? CBPeripheral }
-            .map { BluetoothDevice(it) }
-            .also(callback)
+        manager?.retrieveConnectedPeripheralsWithServices(listOf("180A"))
+            ?.mapNotNull { it as? CBPeripheral }
+            ?.map { BluetoothDevice(it) }
+            ?.also(callback)
     }
 
     actual fun connect(device: BluetoothDevice) {
         println("\n connect device call before" + device.peripheral)
 
-        manager.connectPeripheral(device.peripheral, null)
+        manager?.connectPeripheral(device.peripheral, null)
     }
 
     actual fun disconnect() {
         println("\n disconnect")
-        manager.cancelPeripheralConnection(getDeviceOrThrow().peripheral)
+        manager?.cancelPeripheralConnection(getDeviceOrThrow().peripheral)
     }
 
     actual fun discoverServices() {
