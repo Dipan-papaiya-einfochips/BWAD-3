@@ -73,7 +73,11 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
             btnScan.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         }
     }
-    @IBOutlet weak var vwUserId: UIView!
+    @IBOutlet weak var vwUserId: UIView!{
+        didSet{
+            vwUserId.isHidden = true
+        }
+    }
     @IBOutlet weak var btnUserIDChange: UIButton!{
         didSet{
             btnUserIDChange.titleLabel?.textColor = UIColor.white
