@@ -7,7 +7,7 @@ import com.squareup.sqldelight.drivers.native.wrapConnection
 
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
-        /*
+
         val encryption = DatabaseConfiguration.Encryption("test")
         val config = DatabaseConfiguration(
             name = "HealthyHeart1.db",
@@ -30,7 +30,7 @@ actual class DatabaseDriverFactory {
         )
 
         val driver = NativeSqliteDriver(config)
-        return driver */
-        return NativeSqliteDriver(AppDatabase.Schema, "HealthyHeart1.db")
+        return driver
+//       return NativeSqliteDriver(AppDatabase.Schema, "HealthyHeart1.db")
     }
 }

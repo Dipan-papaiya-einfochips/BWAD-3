@@ -19,12 +19,12 @@ kotlin {
 
     cocoapods {
         summary = "Some description for the Shared Module"
-//        homepage = "Link to the Shared Module homepage"
+        homepage = "Link to the Shared Module homepage"
         version = "1.0"
         ios.deploymentTarget = "14.1"
         podfile = project.file("../iosApp/Podfile")
-        homepage = "https://github.com/touchlab"
-        pod("SQLCipher", "~> 4.0")
+//        homepage = "https://github.com/touchlab"
+//        pod("SQLCipher", "~> 4.0")
         framework {
             baseName = "shared"
         }
@@ -61,11 +61,12 @@ kotlin {
 
             dependencies {
                 implementation("com.squareup.sqldelight:native-driver:$sqlDelightVersion")
-                implementation("co.touchlab:sqliter:0.7.1") {
-                    version {
-                        strictly("0.7.1")
-                    }
-                }
+                implementation("co.touchlab:sqliter-driver:1.0.10")
+//                implementation("co.touchlab:sqliter:0.7.1") {
+//                    version {
+//                        strictly("0.7.1")
+//                    }
+//                }
             }
         }
         val iosX64Test by getting

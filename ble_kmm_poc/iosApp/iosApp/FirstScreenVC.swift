@@ -116,18 +116,40 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
     @IBOutlet weak var tblView: UITableView!
     var readStoredReadingsArr : [BpMeasurement] = []
     
-    var userID = 0
+    var userID = 1
     
     var isMeasurementData = false
+    var userDBTableRepo: UserDBTableRepo?
     override func viewDidLoad() {
         super.viewDidLoad()
+        let path = FileManager.documentsDir()
+        debugPrint("path", path)
+        
+        userDBTableRepo = UserDBTableRepo(databaseDriverFactory: DatabaseDriverFactory())
+        self.loadLaunches()
+        
+        
         debugPrint("FirstScreenVC didLoad method called")
         
         //        bleAdapter.listener = self
         //        bleManager = BluetoothManager(mainBluetoothAdapter: bleAdapter, foListener: self)
         
 //        initOld()
+    
     }
+    func loadLaunches() {
+        if let repo = userDBTableRepo{
+            repo.getAllUsers { user, error in
+                if let launches = user {
+                    debugPrint("launches")
+                } else {
+                    debugPrint("launches error")
+                }
+            }
+        }
+        
+    }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     }
@@ -212,5 +234,17 @@ extension FirstScreenVC: UITableViewDataSource{
         }
         cell.showReadings(dict: readStoredReadingsArr[indexPath.row], index: indexPath.row, isNewMeasurement: isMeasurementData)
         return cell
+    }
+}
+
+extension FileManager {
+    class func documentsDir() -> String {
+        var paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as [String]
+        return paths[0]
+    }
+    
+    class func cachesDir() -> String {
+        var paths = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true) as [String]
+        return paths[0]
     }
 }
