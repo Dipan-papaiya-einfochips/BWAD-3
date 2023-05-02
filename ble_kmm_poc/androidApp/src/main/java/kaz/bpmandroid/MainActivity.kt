@@ -69,23 +69,23 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
 
         var loUserRepo: UserRepo = UserRepo(this)
         CoroutineScope(Dispatchers.IO).launch {
-            //loUserRepo.insertUser()
+           // loUserRepo.insertUser()
         }
 
 
-        /*CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             loUsers = loUserRepo.getAllUsers()
             if (loUsers.isNotEmpty()) {
                 runOnUiThread {
                     tv_name.setText(loUsers[0].firstName + " " + loUsers[0].lastName)
                     Toast.makeText(this@MainActivity, "" + loUsers[0].firstName, Toast.LENGTH_LONG)
                         .show()
-                    Log.e("Name", loUsers[0].firstName.toString())
+                    Log.e("UserName", loUsers[0].firstName.toString())
                 }
             } else {
-                tv_name.setText("No User Available")
+                tv_name.text = "No User Available"
             }
-        }*/
+        }
 
     }
 
@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
         val sp = getSharedPreferences("MySharedPref", MODE_PRIVATE)
         var loUSerId = sp.getInt("UserID", 0)
         var lbWrite = sp.getBoolean("ShouldWrite", false)
-        displayUserNameOnDevice(device,loUSerId,lbWrite)
+        displayUserNameOnDevice(device, loUSerId, lbWrite)
 
     }
 
@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
         println("displayUserNameOnDevice")
         var loNameByte: Any = Any()
         CoroutineScope(Dispatchers.IO).async {
-            loNameByte = Utils.setUserName("Pankti",loUSerId,lbWrite)
+            loNameByte = Utils.setUserName("Pankti", loUSerId, lbWrite)
 
             moBleManager.writeDataToDevice(
                 device,

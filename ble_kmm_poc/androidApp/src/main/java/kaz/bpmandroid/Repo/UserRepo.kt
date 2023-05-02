@@ -9,8 +9,8 @@ class UserRepo(var foContext: Context) {
     var loDBFactory = DatabaseDriverFactory(foContext)
     var loDb = Database(loDBFactory)
 
-    suspend fun insertUser(loUser:User) {
-      /*  var loUser: User = User(
+    suspend fun insertUser() {
+        var loUser: User = User(
             "20",
             1,
             "Jason",
@@ -29,7 +29,7 @@ class UserRepo(var foContext: Context) {
             0.0,
             "2019jonsnowgot@gmail.com",
             null
-        )*/
+        )
 
         loDb.insertUsers(users = loUser)
 

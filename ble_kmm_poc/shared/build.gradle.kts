@@ -44,6 +44,7 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
+                implementation("net.zetetic:android-database-sqlcipher:4.5.0")
                 implementation("com.squareup.sqldelight:android-driver:$sqlDelightVersion")
             }
         }
@@ -58,6 +59,11 @@ kotlin {
 
             dependencies {
                 implementation("com.squareup.sqldelight:native-driver:$sqlDelightVersion")
+                implementation("co.touchlab:sqliter:0.7.1") {
+                    version {
+                        strictly("0.7.1")
+                    }
+                }
             }
         }
         val iosX64Test by getting
@@ -86,6 +92,7 @@ sqldelight {
     database("AppDatabase") {
         packageName = "kaz.bpmandroid.db"
         deriveSchemaFromMigrations = false
+        linkSqlite = false
 //        migrationOutputDirectory = file("$buildDir/generated/migrations")
     }
 }
