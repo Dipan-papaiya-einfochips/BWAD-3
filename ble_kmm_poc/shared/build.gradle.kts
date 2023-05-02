@@ -19,10 +19,12 @@ kotlin {
 
     cocoapods {
         summary = "Some description for the Shared Module"
-        homepage = "Link to the Shared Module homepage"
+//        homepage = "Link to the Shared Module homepage"
         version = "1.0"
         ios.deploymentTarget = "14.1"
         podfile = project.file("../iosApp/Podfile")
+        homepage = "https://github.com/touchlab"
+        pod("SQLCipher", "~> 4.0")
         framework {
             baseName = "shared"
         }
