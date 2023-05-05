@@ -14,24 +14,17 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:gravity="center"
-        android:text="ABC"
+        android:text="No Device paired"
         android:textColor="@android:color/black"
         android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/btn_scan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/txt_name"
-        android:gravity="center"
-        android:padding="8dp"
-        android:text="Start Scan" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/scan_results_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/btn_scan"
+        android:layout_above="@+id/btn_scan"
+        android:layout_below="@+id/txt_name"
         android:layout_marginTop="8dp"
         tools:listitem="@layout/item_history_reading" />
 
@@ -41,6 +34,16 @@
         android:layout_height="60dp"
         android:layout_centerInParent="true"
         android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btn_scan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/holo_blue_dark"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text="Start Scan" />
 
 
 </RelativeLayout>

@@ -1,8 +1,10 @@
 package kaz.bpmandroid
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -13,8 +15,8 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kaz.bpmandroid.Repo.UserRepo
@@ -69,21 +71,20 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
 
         var loUserRepo: UserRepo = UserRepo(this)
         CoroutineScope(Dispatchers.IO).launch {
-           // loUserRepo.insertUser()
+            loUserRepo.insertUser()
         }
-
 
         CoroutineScope(Dispatchers.IO).launch {
             loUsers = loUserRepo.getAllUsers()
             if (loUsers.isNotEmpty()) {
                 runOnUiThread {
-                    tv_name.setText(loUsers[0].firstName + " " + loUsers[0].lastName)
+                    //  tv_name.setText(loUsers[0].firstName + " " + loUsers[0].lastName)
                     Toast.makeText(this@MainActivity, "" + loUsers[0].firstName, Toast.LENGTH_LONG)
                         .show()
                     Log.e("UserName", loUsers[0].firstName.toString())
                 }
             } else {
-                tv_name.text = "No User Available"
+                //tv_name.text = "No User Available"
             }
         }
 
@@ -123,22 +124,53 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
         }
 
     override fun onConnect(device: BluetoothDevice) {
-        println("onConnect")
-        tv_name.text = "Paired device ${device.name}"
-        Toast.makeText(this, "Connected device ${device.name}", Toast.LENGTH_SHORT).show()
-        moProgressBar.visibility = View.GONE
-        val sp = getSharedPreferences("MySharedPref", MODE_PRIVATE)
-        var loUSerId = sp.getInt("UserID", 0)
-        var lbWrite = sp.getBoolean("ShouldWrite", false)
-        displayUserNameOnDevice(device, loUSerId, lbWrite)
+        runOnUiThread {
+            println("onConnect")
+            tv_name.text = "Paired device ${device.name}"
+            Toast.makeText(this, "Connected device ${device.name}", Toast.LENGTH_SHORT).show()
+            moProgressBar.visibility = View.GONE
+            val sp = getSharedPreferences("MySharedPref", MODE_PRIVATE)
+            var loUSerId = sp.getInt("UserID", 0)
+            var lbWrite = sp.getBoolean("ShouldWrite", false)
+            displayUserNameOnDevice(device, loUSerId, true)
 
+        }
+
+
+    }
+
+    private fun openDialog(fsTitle: String, fsMessage: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(fsTitle)
+        builder.setMessage(fsMessage)
+        builder.setCancelable(true)
+//builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
+
+        builder.setPositiveButton(android.R.string.ok) { dialog, which ->
+            dialog.dismiss()
+        }
+
+        /*  builder.setNegativeButton(android.R.string.no) { dialog, which ->
+              Toast.makeText(
+                  applicationContext,
+                  android.R.string.no, Toast.LENGTH_SHORT
+              ).show()
+          }*/
+
+        /*   builder.setNeutralButton("Maybe") { dialog, which ->
+               Toast.makeText(
+                   applicationContext,
+                   "Maybe", Toast.LENGTH_SHORT
+               ).show()
+           }*/
+        builder.show()
     }
 
     private fun displayUserNameOnDevice(device: BluetoothDevice, loUSerId: Int, lbWrite: Boolean) {
         println("displayUserNameOnDevice")
         var loNameByte: Any = Any()
         CoroutineScope(Dispatchers.IO).async {
-            loNameByte = Utils.setUserName("Pankti", loUSerId, lbWrite)
+            loNameByte = Utils.setUserName("Dipan", loUSerId, lbWrite)
 
             moBleManager.writeDataToDevice(
                 device,
@@ -147,6 +179,7 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
                 loNameByte as ByteArray
             )
         }
+        openDialog("", "${device.name} Device Connected Successfully.")
 
     }
 
@@ -182,6 +215,7 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
 
     override fun onMeasurement() {
         moList.clear()
+        openDialog("", "New measurement Added.")
     }
 
     override fun onGetReadings(readingData: List<BpMeasurement>) {

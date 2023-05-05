@@ -5,10 +5,10 @@ import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.drivers.native.NativeSqliteDriver
 import com.squareup.sqldelight.drivers.native.wrapConnection
 
-actual class DatabaseDriverFactory {
+actual class DatabaseDriverFactory(val key: String) {
     actual fun createDriver(): SqlDriver {
 
-        val encryption = DatabaseConfiguration.Encryption("test")
+        val encryption = DatabaseConfiguration.Encryption(key)
         val config = DatabaseConfiguration(
             name = "HealthyHeart1.db",
             version = AppDatabase.Schema.version,

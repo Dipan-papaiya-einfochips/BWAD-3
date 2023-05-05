@@ -18,14 +18,16 @@ package kaz.bpmandroid
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
+import android.graphics.Color
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.compose.ui.input.key.Key.Companion.I
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 
 import kaz.bpmandroid.model.BpMeasurement
@@ -50,16 +52,23 @@ class HistoryAdapter(
 
         val item = items[position]
 
+        if (position == 0) {
+            holder.llMain.setBackgroundColor(Color.parseColor("#00B0FF"))
+        }else{
+            holder.llMain.setBackgroundColor(Color.parseColor("#ffffff"))
+        }
+
 
         // sets the text to the textview from our itemHolder class
         holder.textView.text =
-            ("SYS: ${item.systolic} ${item.units} DIY: ${item.diastolic} ${item.units} PULSE: ${item.pulse}")
+            ("SYS: ${item.systolic} ${item.units} DIA: ${item.diastolic} ${item.units} PULSE: ${item.pulse}")
 
     }
 
     // Holds the views for adding it to image and text
     class ViewHolder(ItemView: View) : RecyclerView.ViewHolder(ItemView) {
         val textView: TextView = itemView.findViewById(R.id.tv_data)
+        val llMain: LinearLayout = itemView.findViewById(R.id.llMain)
     }
 
     override fun getItemViewType(position: Int): Int {

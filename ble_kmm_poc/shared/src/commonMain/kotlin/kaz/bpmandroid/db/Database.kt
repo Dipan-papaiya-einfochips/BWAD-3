@@ -1,4 +1,5 @@
 package kaz.bpmandroid.db
+
 import kaz.bpmandroid.db.AppDatabase
 import kaz.bpmandroid.db.DatabaseDriverFactory
 import kaz.bpmandroid.db.User

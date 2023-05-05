@@ -12,6 +12,6 @@ actual class DatabaseDriverFactory(private val context: Context) {
         var key = loDBEncryptionKeyService.getDatabaseEncryptionKey()
         val passphrase: ByteArray = "test".toByteArray()
         val factory = SupportFactory(passphrase)
-        return AndroidSqliteDriver(AppDatabase.Schema, context, "HealthyHeart1.db",factory)
+        return AndroidSqliteDriver(AppDatabase.Schema, context, "HealthyHeart1.db", factory)
     }
 }
