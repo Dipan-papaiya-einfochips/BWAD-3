@@ -8,16 +8,19 @@
 
 import Foundation
 import UIKit
+import KeychainAccess
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
+    var dbKey: String?
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         debugPrint("App Delegate started")
         self.window = UIWindow(frame: UIScreen.main.bounds)
         if let windowObj = self.window {
             self.setRootViewForApplication(window: windowObj) //navigate as per login
         }
+        setDatabaseEncryptionKey()
         return true
     }
     
@@ -30,6 +33,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             window.rootViewController = navigationController
             window.makeKeyAndVisible()
         }
+    }
+    
+    func setDatabaseEncryptionKey(){
+        let bundleIdentifier = Bundle.main.bundleIdentifier ?? "com.kaz.bloodpressure"
+        
+        let keychainServiceName = "\(bundleIdentifier).secure.storage"
+        
+        let securityService = SecurityService(keychainService: KeychainService(keychain: Keychain(service: keychainServiceName)))
+        self.dbKey = securityService.databaseSecureKey
+        print("dbSecureKey: \(self.dbKey ?? "")")
     }
 }
 

@@ -1,7 +1,7 @@
 target 'iosApp' do
   use_frameworks!
   platform :ios, '14.1'
-#   pod 'SQLCipher'
-pod 'SQLCipher'
+  pod 'SQLCipher'
+  pod 'KeychainAccess'
   pod 'shared', :path => '../shared'
 end

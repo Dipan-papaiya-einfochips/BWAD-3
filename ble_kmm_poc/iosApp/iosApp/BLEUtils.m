@@ -10,6 +10,20 @@
 
 @implementation BLEUtils
 
+#define kStoragePeripheralKey            @"StoragePeripheralKey"
+#define kStorageDateKey                    @"StorageDateKey"
+#define kStorageDeviceNumUsersKey        @"StorageDeviceNumUsers"
+#define kStoragePairingStateKey            @"StoragePairingStateKey"
+#define kStorageUser1HashKey            @"StorageUser1HashKey"
+#define kStorageUser2HashKey            @"StorageUser2HashKey"
+#define kStorageDeviceModelKey            @"StorageDeviceModelKey"
+#define kStorageNumStoredReadings        @"StorageNumStoredReadings"
+#define kStorageMaxStoredReadings        @"StorageMaxStoredReadings"
+#define kStorageMaxUserStoredReadings    @"StorageMaxUserStoredReadings"
+#define kStorageUserNameArrayKey        @"StorageUserNameArrayKey"
+#define kStorageLedActivated            @"StorageLedActivated"
+#define kStorageDeviceUptime            @"StorageDeviceUptime"
+
 + (UInt32)bpmHash:(nonnull NSString *)uuidString {
     UInt32 next, crc, mask;
     
@@ -46,4 +60,46 @@
     return (~crc) & 0x00ffffff;    // mask out the top 2 bits
 }
 
++(int)getUserID:(NSData*)manufacturerData hash:(UInt32)bpmHash
+{
+    NSMutableDictionary *peripheralDic = [[NSMutableDictionary alloc]init];
+    UInt8 *data = (UInt8*)manufacturerData.bytes;
+    
+    UInt8 deviceModel = data[0];
+    [peripheralDic setObject:@(deviceModel) forKey:kStorageDeviceModelKey];
+    
+    UInt8 numUsers = data[1] & 0x0F;
+    [peripheralDic setObject:@(numUsers) forKey:kStorageDeviceNumUsersKey];
+    
+    UInt8 pairable = data[1] & 0x30;
+    [peripheralDic setObject:@(pairable) forKey:kStoragePairingStateKey];
+    
+    UInt8 led = (data[1] & 0x40) >> 6;
+    [peripheralDic setObject:@(led) forKey:kStorageLedActivated];
+    
+    UInt32 user1Hash = 0, user2Hash = 0;
+    
+    user1Hash |= ((UInt32)data[2]) << 16;
+    user1Hash |= ((UInt32)data[3]) << 8;
+    user1Hash |= ((UInt32)data[4]);
+    
+    user2Hash |= ((UInt32)data[5]) << 16;
+    user2Hash |= ((UInt32)data[6]) << 8;
+    user2Hash |= ((UInt32)data[7]);
+    
+    [peripheralDic setObject:@(user1Hash) forKey:kStorageUser1HashKey];
+    [peripheralDic setObject:@(user2Hash) forKey:kStorageUser2HashKey];
+    
+    
+    NSNumber *pairingState = peripheralDic[kStoragePairingStateKey];
+    NSLog(@"Objc Dict: %@", peripheralDic);
+    if(([peripheralDic[kStorageUser1HashKey] longLongValue] == bpmHash && bpmHash != 0) || (pairingState && pairingState.intValue & PAIRING_USER1_PAIRABLE))
+        return 0;
+    else if(([peripheralDic[kStorageUser2HashKey] longLongValue] == bpmHash && bpmHash != 0) || (pairingState && pairingState.intValue & PAIRING_USER2_PAIRABLE))
+        return 1;
+    else
+        return -1;
+} 
 @end
+
+

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,6 +15,8 @@
 		9657A65129EFD67400432A77 /* FirstScreenVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9657A65029EFD67400432A77 /* FirstScreenVC.swift */; };
 		9657A65329EFD6C400432A77 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9657A65229EFD6C400432A77 /* Main.storyboard */; };
 		968F595C29FA455700EA5EA8 /* ReadDataTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 968F595B29FA455700EA5EA8 /* ReadDataTableViewCell.swift */; };
+		96E4D9CD2A04DDD300B823CF /* SecurityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E4D9CC2A04DDD300B823CF /* SecurityService.swift */; };
+		96E4D9CF2A04DDEB00B823CF /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E4D9CE2A04DDEB00B823CF /* KeychainService.swift */; };
 		96FE35D529DAE7130014AD0D /* libsqlite3.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 96FE35D429DAE7040014AD0D /* libsqlite3.0.tbd */; };
 		CD9B5C7D3BD59B164E64F5B4 /* Pods_iosApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D1F904503FD66F57A67CA34 /* Pods_iosApp.framework */; };
 /* End PBXBuildFile section */
@@ -35,6 +37,8 @@
 		9657A65029EFD67400432A77 /* FirstScreenVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstScreenVC.swift; sourceTree = "<group>"; };
 		9657A65229EFD6C400432A77 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		968F595B29FA455700EA5EA8 /* ReadDataTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadDataTableViewCell.swift; sourceTree = "<group>"; };
+		96E4D9CC2A04DDD300B823CF /* SecurityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityService.swift; sourceTree = "<group>"; };
+		96E4D9CE2A04DDEB00B823CF /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		96FE35D429DAE7040014AD0D /* libsqlite3.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.0.tbd; path = usr/lib/libsqlite3.0.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -100,8 +104,18 @@
 				9612A5C029F113F100AE0C42 /* KazBleManager.swift */,
 				960533CD29F9274A00DF4F88 /* iosApp-Bridging-Header.h */,
 				968F595B29FA455700EA5EA8 /* ReadDataTableViewCell.swift */,
+				96E4D9CB2A04DDC200B823CF /* Encryption */,
 			);
 			path = iosApp;
+			sourceTree = "<group>";
+		};
+		96E4D9CB2A04DDC200B823CF /* Encryption */ = {
+			isa = PBXGroup;
+			children = (
+				96E4D9CC2A04DDD300B823CF /* SecurityService.swift */,
+				96E4D9CE2A04DDEB00B823CF /* KeychainService.swift */,
+			);
+			path = Encryption;
 			sourceTree = "<group>";
 		};
 		B353B3367C2765098E1D7891 /* Pods */ = {
@@ -124,6 +138,7 @@
 				7555FF77242A565900829871 /* Sources */,
 				7555FF79242A565900829871 /* Resources */,
 				7877A622CA785076C6A46805 /* Frameworks */,
+				28CC9B2F07D2B2C9C0BF825D /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -182,6 +197,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		28CC9B2F07D2B2C9C0BF825D /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		81E6DF595D175390C8638370 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -214,6 +246,8 @@
 				968F595C29FA455700EA5EA8 /* ReadDataTableViewCell.swift in Sources */,
 				9612A5C129F113F100AE0C42 /* KazBleManager.swift in Sources */,
 				9657A64D29EFD62600432A77 /* AppDelegate.swift in Sources */,
+				96E4D9CD2A04DDD300B823CF /* SecurityService.swift in Sources */,
+				96E4D9CF2A04DDEB00B823CF /* KeychainService.swift in Sources */,
 				960533D129F9274A00DF4F88 /* BLEUtils.m in Sources */,
 				9657A65129EFD67400432A77 /* FirstScreenVC.swift in Sources */,
 			);

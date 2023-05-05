@@ -1,16 +1,31 @@
 PODS:
+  - KeychainAccess (4.2.2)
   - shared (1.0)
+  - SQLCipher (4.5.4):
+    - SQLCipher/standard (= 4.5.4)
+  - SQLCipher/common (4.5.4)
+  - SQLCipher/standard (4.5.4):
+    - SQLCipher/common
 
 DEPENDENCIES:
+  - KeychainAccess
   - shared (from `../shared`)
+  - SQLCipher
+
+SPEC REPOS:
+  trunk:
+    - KeychainAccess
+    - SQLCipher
 
 EXTERNAL SOURCES:
   shared:
     :path: "../shared"
 
 SPEC CHECKSUMS:
+  KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
   shared: 2d3b24a8fe27b7d9e65b8d075a9672fbc6a1aa10
+  SQLCipher: 905b145f65f349f26da9e60a19901ad24adcd381
 
-PODFILE CHECKSUM: f282da88f39e69507b0a255187c8a6b644477756
+PODFILE CHECKSUM: dbbe4caea4b611901496dfa1dc337b0065fd3e3b
 
 COCOAPODS: 1.12.0

@@ -113,19 +113,23 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
     var device : BluetoothDevice?
     var bleState: KAZDeviceStatus?
     
+    
+    var bpmHash : UInt32?
     @IBOutlet weak var tblView: UITableView!
     var readStoredReadingsArr : [BpMeasurement] = []
     
-    var userID = 1
+    var userID = 0
     
     var isMeasurementData = false
     var userDBTableRepo: UserDBTableRepo?
     override func viewDidLoad() {
         super.viewDidLoad()
         let path = FileManager.documentsDir()
-        debugPrint("path", path)
-        
-        userDBTableRepo = UserDBTableRepo(databaseDriverFactory: DatabaseDriverFactory())
+        debugPrint("path: \(path)")
+        let deviceID = UIDevice.current.identifierForVendor!.uuidString
+        print(deviceID)
+        let key = (UIApplication.shared.delegate as! AppDelegate).dbKey ?? ""
+        userDBTableRepo = UserDBTableRepo(databaseDriverFactory: DatabaseDriverFactory(key: key))
         self.loadLaunches()
         
         
@@ -159,11 +163,11 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
     }
     @IBAction func btnActionUserIDChange(_ sender: UIButton) {
         debugPrint("btnActionUserIDChange")
-        if userID == 0 {
-            userID = 1
-        }else {
-            userID = 0
-        }
+//        if userID == 0 {
+//            userID = 1
+//        }else {
+//            userID = 0
+//        }
         startScanAction()
     }
     @IBAction func btnActionWriteUserName(_ sender: UIButton) {
@@ -176,6 +180,7 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
         isMeasurementData = false
         resetTableViewData()
         bleAdapter = MainBluetoothAdapter()
+        
         if let adapter = bleAdapter{
             adapter.listener = self
             bleManager = BluetoothManager(mainBluetoothAdapter: adapter)
@@ -198,12 +203,60 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
 extension FirstScreenVC : IBleConnectDisconnectListener{
     func onReadyForPair(device: BluetoothDevice) {
         debugPrint("onReadyForPair")
-        let bpmHash = BLEUtils.bpmHash(UUID().uuidString)
-        self.bleManager?.pairDevice(device: device, devicehash: Int64(bpmHash))
+        bpmHash = BLEUtils.bpmHash(UUID().uuidString)
+        if let hashDevice = bpmHash{
+            self.bleManager?.pairDevice(device: device, devicehash: Int64(hashDevice))
+        }
     }
     
     func onConnect(device: BluetoothDevice) {
         debugPrint("onConnect")
+        if let connectedPeripheral = bleAdapter?.connectedPeripheral, let advetisementData = bleAdapter?.moAdvertisementData, let hashDevice = bpmHash{
+            var dict : [String:Any] = [:]
+            if let data = advetisementData[CBAdvertisementDataManufacturerDataKey] as? Data{
+                debugPrint("data : ",data)
+                
+                let dataConver = [UInt8](data)
+                
+                debugPrint("dataConver : ",dataConver)
+                
+                let deviceModel = UInt8(dataConver[0])
+                dict["StorageDeviceModelKey"] = deviceModel
+                
+                let numUsers = UInt8(dataConver[1] & 0x0F)
+                dict["StorageDeviceNumUsers"] = numUsers
+                
+                let pairable = UInt8(dataConver[1] & 0x30)
+                dict["StoragePairingStateKey"] = pairable
+                
+                let led = UInt8((dataConver[1] & 0*40) >> 6)
+                dict["StorageLedActivated"] = led
+                
+                var user1Hash : UInt32 = 0
+                var user2Hash : UInt32 = 0
+                
+                user1Hash |= UInt32(dataConver[2]) << 16//((UInt32)dataConver[2]) << 16;
+                user1Hash |= UInt32(dataConver[3]) << 8//((UInt32)dataConver[3]) << 8;
+                user1Hash |= UInt32(dataConver[4])//((UInt32)dataConver[4]);
+                
+                user2Hash |= UInt32(dataConver[5]) << 16//((UInt32)dataConver[5]) << 16;
+                user2Hash |= UInt32(dataConver[6]) << 8//((UInt32)dataConver[6]) << 8;
+                user2Hash |= UInt32(dataConver[7])//((UInt32)dataConver[7]);
+                
+                dict["StorageUser1HashKey"] = user1Hash
+                dict["StorageUser2HashKey"] = user2Hash
+                let bpPAIRING_USER1_PAIRABLE = UInt8(0x10)
+                let bpPAIRING_USER2_PAIRABLE = UInt8(0x20)
+                debugPrint("dict pairing:",dict)
+                let userid = BLEUtils.getUserID(data, hash: hashDevice)
+                debugPrint("user id objc: \(userid)")
+                if user1Hash == hashDevice || ((pairable != 0) && (Int(pairable) != 0) && (bpPAIRING_USER1_PAIRABLE == pairable)){//user1Hash == hashDevice || ((pairable != 0) && (Int(pairable) != 0) && (PAIRING_USER1_PAIRABLE != 0)){
+                    userID = 0
+                }else if user2Hash == hashDevice || ((pairable != 0) && (Int(pairable) != 0) && (bpPAIRING_USER2_PAIRABLE == pairable)){//user2Hash == hashDevice || ((pairable != 0) && (Int(pairable) != 0) && (PAIRING_USER2_PAIRABLE != 0)){
+                    userID = 1
+                }
+            }
+        }
         self.lblText.text = "Connected Device : \(device.name)"
         writeProfileNameOnDevice(strName: "Mohini", device: device)
     }
@@ -214,7 +267,8 @@ extension FirstScreenVC : IBleConnectDisconnectListener{
     }
     
     func writeProfileNameOnDevice(strName : String, device: BluetoothDevice){
-        let  bytesName = Utils.companion.setUserName(fsName:strName, loUSerId: Int32(userID),lbWrite: true)
+        let  bytesName = Utils.companion.setUserName(fsName:strName, loUSerId: Int32(userID),lbWrite: false)
+        debugPrint("Name: \(strName) userId : \(userID)")
         DispatchQueue.main.async {
             self.bleManager?.writeDataToDevice(foDevice: device, serviceUUID: Utils.companion.UUID_KAZ_BPM_SERVICE, charUUID: Utils.companion.BPM_USER_NAME_CHAR, payload: bytesName)
         }
