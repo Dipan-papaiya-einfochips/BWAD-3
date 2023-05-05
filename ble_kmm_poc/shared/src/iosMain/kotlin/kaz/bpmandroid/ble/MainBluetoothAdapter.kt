@@ -1,6 +1,5 @@
 package kaz.bpmandroid.ble
 
-import kaz.bpmandroid.base.BluetoothManager
 import kaz.bpmandroid.base.IBluetoothManager
 import kaz.bpmandroid.util.Utils
 import kotlinx.coroutines.delay
@@ -21,7 +20,7 @@ actual class MainBluetoothAdapter {
     private var whenReady: ((MainBluetoothAdapter) -> Unit)? = null
     private var connectedDevice: BluetoothDevice? = null
     private var discoveredServices: ArrayList<BleService> = ArrayList()
-    var connectingPeripheral: CBPeripheral? = null
+    var connectedPeripheral: CBPeripheral? = null
 
 
     // list of CBCharacteristics to discover
@@ -54,11 +53,14 @@ actual class MainBluetoothAdapter {
                 println("\n peripheral didConnectPeripheral")
                 println("\n connect device call after$didConnectPeripheral")
                 connectedDevice = BluetoothDevice(didConnectPeripheral)
+
                 connectedDevice.also {
                     println("\n peripheral pass connect device")
+                    connectedPeripheral = connectedDevice!!.peripheral
                     listener?.onStateChange(BleState.Connected(connectedDevice!!))
                 }
             }
+
             override fun peripheral(peripheral: CBPeripheral, didDiscoverServices: NSError?) {
                 val device = getDeviceOrThrow()
                 for (service in peripheral.cbServices) {
@@ -96,21 +98,20 @@ actual class MainBluetoothAdapter {
                 if (characteristics != null && characteristics.count() > 0) {
                     for (characteristic in characteristics!!) {
                         peripheral.setNotifyValue(
-                            true,characteristic as CBCharacteristic
+                            true, characteristic as CBCharacteristic
                         )
                         if (characteristic.UUID.UUIDString.contains(
                                 Utils.BPM_NUM_READINGS_CHAR,
                                 true
                             )
                         ) {
-                                    peripheral.readValueForCharacteristic(characteristic)
-                        }
-                        else if (characteristic.UUID.UUIDString.contains(
+                            peripheral.readValueForCharacteristic(characteristic)
+                        } else if (characteristic.UUID.UUIDString.contains(
                                 Utils.BPM_PAIRING_CHAR,
                                 true
                             )
                         ) {
-                                      peripheral.readValueForCharacteristic(characteristic)
+                            peripheral.readValueForCharacteristic(characteristic)
                         }
                         discoverCharacteristics.add(characteristic as CBCharacteristic)
                     }
@@ -129,11 +130,11 @@ actual class MainBluetoothAdapter {
                 var chUUID = didUpdateValueForCharacteristic.UUID.UUIDString
                 println("didUpdateValueForCharacteristic chUUID : " + chUUID)
 
-                var loBleService = BleService(service!!.UUID.UUIDString(),getDeviceOrThrow())
+                var loBleService = BleService(service!!.UUID.UUIDString(), getDeviceOrThrow())
                 println("didUpdateValueForCharacteristic service UUID : " + service.UUID.UUIDString)
                 if ((service.UUID.UUIDString == Utils.UUID_KAZ_BPM_SERVICE) || (service.UUID.UUIDString == Utils.UUID_BLOOD_PRESSURE_SERVICE)) {
                     println("didUpdateValueForCharacteristic onStateChange : " + chUUID)
-                    if (chUUID.equals(Utils.BPM_USER_NAME_CHAR, true)){
+                    if (chUUID.equals(Utils.BPM_USER_NAME_CHAR, true)) {
                         listener?.onStateChange(
                             BleState.CharacteristicWrite(
                                 getDeviceOrThrow(),
@@ -143,7 +144,7 @@ actual class MainBluetoothAdapter {
                                 )
                             )
                         )
-                    }else if (chUUID.equals(Utils.BPM_NUM_READINGS_CHAR, true)){
+                    } else if (chUUID.equals(Utils.BPM_NUM_READINGS_CHAR, true)) {
                         listener?.onStateChange(
                             BleState.CharacteristicRead(
                                 getDeviceOrThrow(),
@@ -153,7 +154,7 @@ actual class MainBluetoothAdapter {
                                 )
                             )
                         )
-                    }else{
+                    } else {
                         listener?.onStateChange(
                             BleState.CharacteristicChanged(
                                 getDeviceOrThrow(),
@@ -170,16 +171,21 @@ actual class MainBluetoothAdapter {
 
             // This method is called when a device gets disconnected
             @Suppress("CONFLICTING_OVERLOADS")
-            override fun centralManager(central: CBCentralManager, didDisconnectPeripheral: CBPeripheral, error: NSError?) {
+            override fun centralManager(
+                central: CBCentralManager,
+                didDisconnectPeripheral: CBPeripheral,
+                error: NSError?
+            ) {
                 connectedDevice = BluetoothDevice(didDisconnectPeripheral)
                 connectedDevice.also {
+                    connectedPeripheral = null
                     println("\n peripheral pass connect device")
                     listener?.onStateChange(BleState.Disconnected(connectedDevice!!))
                 }
             }
         }
 
-    private var manager : CBCentralManager? = null
+    private var manager: CBCentralManager? = null
     private var onDeviceReceived: ((BluetoothDevice) -> Unit)? = null
 
     init {
