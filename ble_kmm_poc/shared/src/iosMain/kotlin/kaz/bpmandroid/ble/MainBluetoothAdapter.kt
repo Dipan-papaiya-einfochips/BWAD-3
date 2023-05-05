@@ -21,6 +21,7 @@ actual class MainBluetoothAdapter {
     private var connectedDevice: BluetoothDevice? = null
     private var discoveredServices: ArrayList<BleService> = ArrayList()
     var connectedPeripheral: CBPeripheral? = null
+    var moAdvertisementData: Map<Any?, *>? = null
 
 
     // list of CBCharacteristics to discover
@@ -41,6 +42,7 @@ actual class MainBluetoothAdapter {
                 RSSI: NSNumber
             ) {
                 println("\n peripheral didDiscoverPeripheral")
+                moAdvertisementData = advertisementData
                 val device = BluetoothDevice(didDiscoverPeripheral)
                 onDeviceReceived?.invoke(device)
             }
