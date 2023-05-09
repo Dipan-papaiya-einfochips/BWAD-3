@@ -8,6 +8,7 @@
 
 import UIKit
 import shared
+import MBProgressHUD
 
 class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
     func onMeasurement(){
@@ -17,6 +18,7 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
     }
     
     func onGetReadings(readingData: [BpMeasurement]) {
+        self.dismissHUD(isAnimated: false)
         readStoredReadingsArr.append(readingData[0])
       if readStoredReadingsArr.count > 1{
             readStoredReadingsArr = readStoredReadingsArr.reversed()
@@ -122,6 +124,8 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
     
     var isMeasurementData = false
     var userDBTableRepo: UserDBTableRepo?
+    
+    var isWriteUserName = false
     override func viewDidLoad() {
         super.viewDidLoad()
         let path = FileManager.documentsDir()
@@ -159,6 +163,7 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
     }
     @IBAction func btnActionScan(_ sender: UIButton) {
         startScanAction()
+        self.showHUD(progressLabel: "")
         debugPrint("btnActionScan")
     }
     @IBAction func btnActionUserIDChange(_ sender: UIButton) {
@@ -177,6 +182,8 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
         self.present(alert, animated: true, completion: nil)
     }
     private func startScanAction() {
+        bpmHash = BLEUtils.bpmHash(UUID().uuidString)
+        isWriteUserName = false
         isMeasurementData = false
         resetTableViewData()
         bleAdapter = MainBluetoothAdapter()
@@ -203,7 +210,7 @@ class FirstScreenVC: UIViewController, IBluetoothManager, IBleReadDataListener {
 extension FirstScreenVC : IBleConnectDisconnectListener{
     func onReadyForPair(device: BluetoothDevice) {
         debugPrint("onReadyForPair")
-        bpmHash = BLEUtils.bpmHash(UUID().uuidString)
+        
         if let hashDevice = bpmHash{
             self.bleManager?.pairDevice(device: device, devicehash: Int64(hashDevice))
         }
@@ -222,6 +229,12 @@ extension FirstScreenVC : IBleConnectDisconnectListener{
                 
                 let deviceModel = UInt8(dataConver[0])
                 dict["StorageDeviceModelKey"] = deviceModel
+                
+                if deviceModel == 1{
+                    isWriteUserName = true
+                }else{
+                    isWriteUserName = false
+                }
                 
                 let numUsers = UInt8(dataConver[1] & 0x0F)
                 dict["StorageDeviceNumUsers"] = numUsers
@@ -255,6 +268,10 @@ extension FirstScreenVC : IBleConnectDisconnectListener{
                 }else if user2Hash == hashDevice || ((pairable != 0) && (Int(pairable) != 0) && (bpPAIRING_USER2_PAIRABLE == pairable)){//user2Hash == hashDevice || ((pairable != 0) && (Int(pairable) != 0) && (PAIRING_USER2_PAIRABLE != 0)){
                     userID = 1
                 }
+//                isWriteUserName = false
+//                userID = 1
+                debugPrint("*********userId : \(userID)*********")
+                debugPrint("*********write : \(isWriteUserName)*********")
             }
         }
         self.lblText.text = "Connected Device : \(device.name)"
@@ -262,12 +279,13 @@ extension FirstScreenVC : IBleConnectDisconnectListener{
     }
     
     func onDisconnect() {
-        self.lblText.text = "Device get disconnected"
+        self.lblText.text = "Device disconnected"
         debugPrint("onDisconnect")
+        resetTableViewData()
     }
     
     func writeProfileNameOnDevice(strName : String, device: BluetoothDevice){
-        let  bytesName = Utils.companion.setUserName(fsName:strName, loUSerId: Int32(userID),lbWrite: false)
+        let  bytesName = Utils.companion.setUserName(fsName:strName, loUSerId: Int32(userID),lbWrite: isWriteUserName)
         debugPrint("Name: \(strName) userId : \(userID)")
         DispatchQueue.main.async {
             self.bleManager?.writeDataToDevice(foDevice: device, serviceUUID: Utils.companion.UUID_KAZ_BPM_SERVICE, charUUID: Utils.companion.BPM_USER_NAME_CHAR, payload: bytesName)
@@ -302,3 +320,20 @@ extension FileManager {
         return paths[0]
     }
 }
+
+extension UIViewController {
+    
+    func showHUD(progressLabel:String){
+        DispatchQueue.main.async{
+            let progressHUD = MBProgressHUD.showAdded(to: self.view, animated: true)
+            progressHUD.label.text = progressLabel
+        }
+    }
+    
+    func dismissHUD(isAnimated:Bool) {
+        DispatchQueue.main.async{
+            MBProgressHUD.hide(for: self.view, animated: isAnimated)
+        }
+    }
+}
+
