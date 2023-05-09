@@ -40,10 +40,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@android:color/holo_blue_dark"
+        android:background="#9d8563"
         android:gravity="center"
         android:padding="8dp"
-        android:text="Start Scan" />
+        android:text="Start Scan"
+        android:textColor="@android:color/white"
+        android:textStyle="bold" />
 
 
 </RelativeLayout>

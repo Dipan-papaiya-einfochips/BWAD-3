@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.os.Build
 
 actual data class BluetoothDevice(
-    actual val id: String, actual val name: String, internal val androidDevice: BluetoothDevice
+    actual val id: String, actual var name: String, internal val androidDevice: BluetoothDevice
 ) {
     internal var gatt: BluetoothGatt? = null
 }

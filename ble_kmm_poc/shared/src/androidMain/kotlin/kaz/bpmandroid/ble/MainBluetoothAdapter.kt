@@ -22,6 +22,7 @@ import kaz.bpmandroid.base.IBluetoothManager
 import kaz.bpmandroid.model.DeviceInfo
 import kaz.bpmandroid.util.Utils.Companion.DeviceModel4500
 import kaz.bpmandroid.util.Utils.Companion.DeviceModel6350
+import kaz.bpmandroid.util.Utils.Companion.DeviceModel7200
 import kaz.bpmandroid.util.Utils.Companion.PAIRING_USER1_PAIRABLE
 import kaz.bpmandroid.util.Utils.Companion.PAIRING_USER2_PAIRABLE
 import kaz.bpmandroid.util.Utils.Companion.peripheralsDiscovered
@@ -52,7 +53,7 @@ actual class MainBluetoothAdapter(
                 var loBluetoothDevice = BluetoothDevice(device.address, device.name ?: "", device)
                 if (result.scanRecord != null) {
                     moScanResult = result
-                    parseScanResult(moScanResult!!, loBluetoothDevice)
+                    loBluetoothDevice = parseScanResult(moScanResult!!, loBluetoothDevice)!!
                 }
                 handler?.invoke(loBluetoothDevice)
                 stopScan()
@@ -60,7 +61,10 @@ actual class MainBluetoothAdapter(
         }
     }
 
-    private fun parseScanResult(moScanResult: ScanResult, device: BluetoothDevice) {
+    private fun parseScanResult(
+        moScanResult: ScanResult,
+        device: BluetoothDevice
+    ): BluetoothDevice? {
 
         var x = 0
         val advData: ByteArray = moScanResult.scanRecord!!.bytes
@@ -80,7 +84,7 @@ actual class MainBluetoothAdapter(
 
         if (manufacturerData != null && manufacturerData.size > 16) {
             println("Manufacture data is missing or corrupt ")
-            return
+            return null
         }
 
         val deviceModel = (manufacturerData!![0].toInt() and 0xFF).toByte()
@@ -131,13 +135,26 @@ actual class MainBluetoothAdapter(
 
         if (info.deviceModel == DeviceModel4500) {
             myEdit.putBoolean("ShouldWrite", true)
+            // device.name = "BPW4500"
+        } else if (info.deviceModel == DeviceModel7200) {
+            // device.name = "ActiveScan 9"
+            myEdit.putBoolean("ShouldWrite", false)
+        } else if (info.deviceModel == DeviceModel6350) {
+            //  device.name = "ExactFit 5"
+            myEdit.putBoolean("ShouldWrite", false)
         } else {
+            // device.name = "DeviceModelUnknown"
             myEdit.putBoolean("ShouldWrite", false)
         }
 
+
+
+
         myEdit.commit()
+        myEdit.apply()
 
         println("Connected User ID $moConnectedUserID")
+        return device
     }
 
     private var connectedDevice: BluetoothDevice? = null

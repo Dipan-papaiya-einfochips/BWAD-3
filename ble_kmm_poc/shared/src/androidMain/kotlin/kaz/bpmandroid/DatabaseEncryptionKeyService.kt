@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import java.security.SecureRandom
+import java.util.*
 
 class DatabaseEncryptionKeyService(var moContext: Context) {
 
@@ -13,20 +14,23 @@ class DatabaseEncryptionKeyService(var moContext: Context) {
             Context.MODE_PRIVATE
         )
         val myEdit = sharedPreferences.edit()
-        sharedPreferences.getString("DB_KEY", "")?.let {
-            Log.e("DB_EKY", it)
-            return it
+        if (sharedPreferences.getString("DB_KEY", "")!!.isNotEmpty()) {
+            sharedPreferences.getString("DB_KEY", "")?.let {
+                Log.e("DB_KEY", it)
+                return it
+            }
         }
 
         val key = generateKey()
+        Log.e("DB_KEY", key)
         myEdit.putString("DB_KEY", key)
+        myEdit.commit()
         return key
     }
 
     @Suppress("EXPERIMENTAL_API_USAGE")
     private fun generateKey(): String {
-        val keyBytes = ByteArray(32)
-        SecureRandom().nextBytes(keyBytes)
-        return String(keyBytes)
+        var uniqueID = UUID.randomUUID().toString()
+        return uniqueID
     }
 }

@@ -79,8 +79,8 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
             if (loUsers.isNotEmpty()) {
                 runOnUiThread {
                     //  tv_name.setText(loUsers[0].firstName + " " + loUsers[0].lastName)
-                    Toast.makeText(this@MainActivity, "" + loUsers[0].firstName, Toast.LENGTH_LONG)
-                        .show()
+                    /*Toast.makeText(this@MainActivity, "" + loUsers[0].firstName, Toast.LENGTH_LONG)
+                        .show()*/
                     Log.e("UserName", loUsers[0].firstName.toString())
                 }
             } else {
@@ -129,10 +129,11 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
             tv_name.text = "Paired device ${device.name}"
             Toast.makeText(this, "Connected device ${device.name}", Toast.LENGTH_SHORT).show()
             moProgressBar.visibility = View.GONE
-            val sp = getSharedPreferences("MySharedPref", MODE_PRIVATE)
-            var loUSerId = sp.getInt("UserID", 0)
+            val sp = getSharedPreferences("BPM", MODE_PRIVATE)
+            var loUSerId = sp.getInt("UserID", -1)
             var lbWrite = sp.getBoolean("ShouldWrite", false)
-            displayUserNameOnDevice(device, loUSerId, true)
+            println("onConnect$loUSerId $lbWrite")
+            displayUserNameOnDevice(device, loUSerId, lbWrite)
 
         }
 
@@ -170,7 +171,7 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
         println("displayUserNameOnDevice")
         var loNameByte: Any = Any()
         CoroutineScope(Dispatchers.IO).async {
-            loNameByte = Utils.setUserName("Dipan", loUSerId, lbWrite)
+            loNameByte = Utils.setUserName("Molly", loUSerId, lbWrite)
 
             moBleManager.writeDataToDevice(
                 device,
@@ -185,6 +186,14 @@ class MainActivity : AppCompatActivity(), IBleConnectDisconnectListener, IBleRea
 
     override fun onDisconnect() {
         tv_name.text = "Device disconnected"
+        moList.clear()
+        var moAdapter = HistoryAdapter(moList)
+        var layoutManager = LinearLayoutManager(
+            this, RecyclerView.VERTICAL, false
+        )
+        loRv.layoutManager = layoutManager
+        loRv.adapter = moAdapter
+
     }
 
     override fun onReadyForPair(device: BluetoothDevice) {

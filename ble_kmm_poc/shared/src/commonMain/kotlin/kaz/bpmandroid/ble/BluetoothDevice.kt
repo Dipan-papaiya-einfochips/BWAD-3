@@ -2,7 +2,7 @@ package kaz.bpmandroid.ble
 
 expect class BluetoothDevice {
     val id: String
-    val name: String
+    var name: String
 }
 
 data class BleService(

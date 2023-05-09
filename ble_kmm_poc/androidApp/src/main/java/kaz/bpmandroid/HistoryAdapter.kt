@@ -54,14 +54,14 @@ class HistoryAdapter(
 
         if (position == 0) {
             holder.llMain.setBackgroundColor(Color.parseColor("#00B0FF"))
-        }else{
+        } else {
             holder.llMain.setBackgroundColor(Color.parseColor("#ffffff"))
         }
 
 
         // sets the text to the textview from our itemHolder class
         holder.textView.text =
-            ("SYS: ${item.systolic} ${item.units} DIA: ${item.diastolic} ${item.units} PULSE: ${item.pulse}")
+            ("Systolic: ${item.systolic} Diastolic: ${item.diastolic} Pulse: ${item.pulse}")
 
     }
 

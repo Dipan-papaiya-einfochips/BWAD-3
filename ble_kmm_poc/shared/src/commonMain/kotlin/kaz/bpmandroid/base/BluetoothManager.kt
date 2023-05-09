@@ -46,7 +46,7 @@ class BluetoothManager(
     override fun onStateChange(state: BleState) {
         when (state) {
             is BleState.Connected -> {
-                println("Connected device ${state.device}")
+                println("Connected device ${state.device.name}")
                 mainBluetoothAdapter.discoverServices()
             }
             is BleState.CharacteristicChanged -> {
@@ -83,7 +83,7 @@ class BluetoothManager(
                         mainBluetoothAdapter.discoverCharacteristics(service)
                     }
                 }
-
+                println("ServicesDiscovered onConnect")
                 moConnectDisconnectListener.onConnect(state.device)
             }
             is BleState.CharacteristicWrite -> {
